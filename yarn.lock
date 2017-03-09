@@ -2759,17 +2759,17 @@ pend@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
 
-phantom@^4.0.0:
+"phantom@git+https://git@github.com/BlackGlory/phantomjs-node.git":
   version "4.0.0"
-  resolved "https://registry.yarnpkg.com/phantom/-/phantom-4.0.0.tgz#007e45d454ceeb8f074cad993ed44c2193f24d79"
+  resolved "git+https://git@github.com/BlackGlory/phantomjs-node.git#8d5da2e010960162e67e573dcc32d1f1e4dbe59c"
   dependencies:
-    phantomjs-prebuilt "^2.1.4"
+    phantomjs-prebuilt "git+https://git@github.com/BlackGlory/phantomjs.git"
     split "^1.0.0"
     winston "^2.2.0"
 
-phantomjs-prebuilt@^2.1.4:
-  version "2.1.14"
-  resolved "https://registry.yarnpkg.com/phantomjs-prebuilt/-/phantomjs-prebuilt-2.1.14.tgz#d53d311fcfb7d1d08ddb24014558f1188c516da0"
+"phantomjs-prebuilt@git+https://git@github.com/BlackGlory/phantomjs.git":
+  version "2.5.0-beta"
+  resolved "git+https://git@github.com/BlackGlory/phantomjs.git#76cc6be75bcd356916c98f8c2b38210eabe8fae5"
   dependencies:
     es6-promise "~4.0.3"
     extract-zip "~1.5.0"
