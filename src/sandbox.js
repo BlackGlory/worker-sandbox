@@ -3,7 +3,7 @@
 import _ from 'lodash'
 import Runtime from './runtime'
 
-class TimeoutError extends Error {
+export class TimeoutError extends Error {
   constructor(message) {
     super(message)
     this.name = 'TimeoutError'
@@ -18,11 +18,16 @@ function timeoutReject(timeout, message = 'timeout') {
   })
 }
 
-export default class Sandbox extends Runtime {
+export class Sandbox extends Runtime {
   constructor() {
     // TODO
     super()
     this.history = []
+  }
+
+  get status() {
+    // TODO
+    return
   }
 
   async define(name, value) {
@@ -37,7 +42,7 @@ export default class Sandbox extends Runtime {
 
   async eval(code, timeout) {
     if (_.isFunction(code)) {
-      code = code.toString()
+      code = `(${ code })()`
     }
     if (timeout) {
       try {
@@ -81,3 +86,5 @@ export default class Sandbox extends Runtime {
     this.history = [this.context]
   }
 }
+
+export default Sandbox

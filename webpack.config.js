@@ -3,7 +3,7 @@ const webpack = require('webpack')
 
 module.exports = {
   target: 'web'
-//, devtool: 'source-map'
+//devtool: 'source-map'
 , entry: {
     'sandbox': './src/sandbox.js'
   , 'sandbox.min': './src/sandbox.js'
