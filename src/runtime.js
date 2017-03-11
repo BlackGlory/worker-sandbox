@@ -10,6 +10,7 @@ export default class Runtime extends MessageSystem {
     super(worker, context, [
       PERMISSIONS.SEND_ASSIGN
     , PERMISSIONS.SEND_EVAL
+    , PERMISSIONS.SEND_CALL
     , PERMISSIONS.SEND_ACCESS
     , PERMISSIONS.SEND_REMOVE
     , PERMISSIONS.RECEIVE_ERROR

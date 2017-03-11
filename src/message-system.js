@@ -97,13 +97,12 @@ export class MessageSystem {
         }))
       }
     , async [CALL]({ id, name, args }) {
-        // TODO
         if (!this._permissions.includes(PERMISSIONS.RECEIVE_CALL)) {
           return this.dispatchError(new PermissionError('No permission RECEIVE_CALL'))
         }
         if (typeof this._context[name] !== 'undefined') {
           try {
-            this.sendResolvedMessage(id, await this._context[name](...args))
+            this.sendResolvedMessage(id, await this._context[name](...parse(args)))
           } catch(e) {
             this.sendRejectedMessage(id, e)
           }
@@ -229,7 +228,6 @@ export class MessageSystem {
   }
 
   sendCallMessage(name, ...args) {
-    // TODO
     if (!this._permissions.includes(PERMISSIONS.SEND_CALL)) {
       return this.dispatchError(new PermissionError('No permission SEND_CALL'))
     }
@@ -238,7 +236,7 @@ export class MessageSystem {
         id: uuidV4()
       , type: CALL
       , name
-      , args
+      , args: stringify(args)
       }
       this._aliveMessages[message.id] = { resolve, reject }
       this._worker.postMessage(message)

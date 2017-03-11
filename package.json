@@ -45,6 +45,7 @@
     "circular-json": "^0.3.1",
     "event-target": "^0.1.0",
     "lodash": "^4.17.4",
+    "object-hash": "^1.1.7",
     "uuid": "^3.0.1"
   }
 }

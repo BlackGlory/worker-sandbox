@@ -1,11 +1,12 @@
 'use strict'
 
 import _ from 'lodash'
-import uuidV4 from 'uuid/v4'
 import CircularJSON from 'circular-json'
+import project from '../package'
+import hash from 'object-hash'
 
-const SYMBOL_KEY = uuidV4()
-const SYMBOL_VALUE = uuidV4()
+const SYMBOL_KEY = hash.sha1(project)
+const SYMBOL_VALUE = hash.MD5(project)
 
 function markSymbol(obj) {
   return Object.assign({}, obj, {
@@ -83,7 +84,9 @@ export function stringify(value, space) {
 }
 
 export function parse(text) {
-  return JSON.parse(text, reviver)
+  if (_.isString(text)) {
+    return JSON.parse(text, reviver)
+  }
 }
 
 export function stringifyCircular(value, space) {
@@ -91,5 +94,7 @@ export function stringifyCircular(value, space) {
 }
 
 export function parseCircular(text) {
-  return CircularJSON.parse(text, reviver)
+  if (_.isString(text)) {
+    return CircularJSON.parse(text, reviver)
+  }
 }

@@ -50,7 +50,7 @@ describe('Sandbox', function() {
     })
   })
 
-  describe('.constructor', function() {
+  describe('::constructor', function() {
     it('should return context when eval with context', async function() {
       let sandbox = new Sandbox({
             a: 'hello world'
@@ -60,27 +60,50 @@ describe('Sandbox', function() {
     })
   })
 
-  describe('#set & #get', function() {
-    it('should assign and access a number literal', async function() {
+  describe('#set, #get, #assign', function() {
+    it('should set and get a number literal', async function() {
       let sandbox = new Sandbox()
       await sandbox.set('a', 12345)
       let result = await sandbox.get('a')
       expect(result).to.equal(12345)
     })
 
-    it('should assign and access a string literal', async function() {
+    it('should set and get a string literal', async function() {
       let sandbox = new Sandbox()
       await sandbox.set('a', '12345')
       let result = await sandbox.get('a')
       expect(result).to.equal('12345')
     })
 
-    it('should assign and access a function', async function() {
+    it('should set and get a function', async function() {
       let sandbox = new Sandbox()
       await sandbox.set('sayHello', function() { return 'hello' })
       let fn = await sandbox.get('sayHello')
-      expect(fn).to.be.a('function')
       expect(fn()).to.equal('hello')
+    })
+
+    it('should assign multiple property', async function() {
+      let sandbox = new Sandbox()
+      await sandbox.assign({
+        a: 12345
+      , b: 54321
+      })
+      let a = await sandbox.get('a')
+        , b = await sandbox.get('b')
+      expect(a).to.equal(12345)
+      expect(b).to.equal(54321)
+    })
+  })
+
+  describe('#call', function() {
+    it('should return value', async function() {
+      let sandbox = new Sandbox({
+        a: function(value) {
+          return value
+        }
+      })
+      let result = await sandbox.call('a', 12345)
+      expect(result).to.equal(12345)
     })
   })
 

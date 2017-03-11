@@ -37,7 +37,9 @@ export class Sandbox extends Runtime {
   }
 
   async assign(obj) {
-    return await this.sendAssignMessage(obj)
+    return await Promise.all(
+      Object.keys(obj).map(name => this.sendAssignMessage(name, obj[name]))
+    )
   }
 
   async get(name) {
@@ -46,7 +48,6 @@ export class Sandbox extends Runtime {
   }
 
   async call(name, ...args) {
-    // TODO
     return await this.sendCallMessage(name, ...args)
   }
 
