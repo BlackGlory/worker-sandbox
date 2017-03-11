@@ -5,20 +5,20 @@ import { MessageSystem, PERMISSIONS } from './message-system'
 import AdvancedWorker from 'worker-loader?inline&fallback=false!./worker.js'
 
 export default class Runtime extends MessageSystem {
-  constructor() {
-    let context = {}
-      , worker = new AdvancedWorker()
+  constructor(context = {}) {
+    let worker = new AdvancedWorker()
     super(worker, context, [
-      PERMISSIONS.SEND_DEFINE
+      PERMISSIONS.SEND_ASSIGN
     , PERMISSIONS.SEND_EVAL
+    , PERMISSIONS.SEND_ACCESS
+    , PERMISSIONS.SEND_REMOVE
+    , PERMISSIONS.RECEIVE_ERROR
     , PERMISSIONS.RECEIVE_CALL
     ])
-    this.context = context
-    this.worker = worker
   }
 
   destory() {
-    this.worker.terminate()
-    this.worker = null
+    this._worker.terminate()
+    this._worker = null
   }
 }

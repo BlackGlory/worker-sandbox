@@ -409,6 +409,13 @@ babel-plugin-transform-async-to-generator@^6.22.0:
     babel-plugin-syntax-async-functions "^6.8.0"
     babel-runtime "^6.22.0"
 
+babel-plugin-transform-builtin-extend@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/babel-plugin-transform-builtin-extend/-/babel-plugin-transform-builtin-extend-1.1.2.tgz#5e96fecf58b8fa1ed74efcad88475b2af3c9116e"
+  dependencies:
+    babel-runtime "^6.2.0"
+    babel-template "^6.3.0"
+
 babel-plugin-transform-es2015-arrow-functions@^6.22.0:
   version "6.22.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-arrow-functions/-/babel-plugin-transform-es2015-arrow-functions-6.22.0.tgz#452692cb711d5f79dc7f85e440ce41b9f244d221"
@@ -691,14 +698,14 @@ babel-register@^6.23.0:
     mkdirp "^0.5.1"
     source-map-support "^0.4.2"
 
-babel-runtime@^6.18.0, babel-runtime@^6.22.0:
+babel-runtime@^6.18.0, babel-runtime@^6.2.0, babel-runtime@^6.22.0:
   version "6.23.0"
   resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.23.0.tgz#0a9489f144de70efb3ce4300accdb329e2fc543b"
   dependencies:
     core-js "^2.4.0"
     regenerator-runtime "^0.10.0"
 
-babel-template@^6.16.0, babel-template@^6.22.0, babel-template@^6.23.0:
+babel-template@^6.16.0, babel-template@^6.22.0, babel-template@^6.23.0, babel-template@^6.3.0:
   version "6.23.0"
   resolved "https://registry.yarnpkg.com/babel-template/-/babel-template-6.23.0.tgz#04d4f270adbb3aa704a8143ae26faa529238e638"
   dependencies:
@@ -1433,6 +1440,10 @@ estraverse@^1.9.1:
 esutils@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.2.tgz#0abf4f1caa5bcb1f7a9d8acc6dea4faaa04bac9b"
+
+event-target@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/event-target/-/event-target-0.1.0.tgz#9e71ffac011f809f87f3c87d9ccdcc7b0f6634df"
 
 eventemitter3@1.x.x:
   version "1.2.0"

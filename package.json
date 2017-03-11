@@ -11,9 +11,8 @@
     "precommit": "yarn test",
     "prepush": "yarn test",
     "build": "webpack",
-    "dev": "webpack -w",
-    "test": "karma start --single-run",
-    "test-dev": "karma start"
+    "dev": "karma start",
+    "test": "karma start --single-run"
   },
   "ava": {
     "babel": "inherit",
@@ -24,6 +23,7 @@
   },
   "devDependencies": {
     "babel-loader": "^6.4.0",
+    "babel-plugin-transform-builtin-extend": "^1.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-plugin-transform-remove-strict-mode": "^0.0.2",
     "babel-plugin-transform-runtime": "^6.23.0",
@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.23.0",
+    "event-target": "^0.1.0",
     "lodash": "^4.17.4",
     "uuid": "^3.0.1"
   }

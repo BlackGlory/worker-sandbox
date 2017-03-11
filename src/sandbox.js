@@ -2,6 +2,9 @@
 
 import _ from 'lodash'
 import Runtime from './runtime'
+import {
+  serializeFunction, unserializeFunction
+} from './serialize'
 
 export class TimeoutError extends Error {
   constructor(message) {
@@ -19,10 +22,12 @@ function timeoutReject(timeout, message = 'timeout') {
 }
 
 export class Sandbox extends Runtime {
-  constructor() {
-    // TODO
-    super()
-    this.history = []
+  constructor(context = {}) {
+    super(context)
+  }
+
+  get worker() {
+    return this._worker
   }
 
   get status() {
@@ -30,9 +35,24 @@ export class Sandbox extends Runtime {
     return
   }
 
-  async define(name, value) {
-    // TODO
-    return await this.sendDefineMessage(name, value)
+  async set(name, value) {
+    if (_.isPlainObject(name)) {
+      let obj = name
+      return await Promise.all(
+        // TODO
+        Object.keys(obj).map(key => this.sendAssignMessage(key, obj[key]))
+      )
+    }
+    if (_.isFunction(value)) {
+      let fn = value
+      return await this.sendAssignMessage(name, serializeFunction(fn))
+    }
+    return await this.sendAssignMessage(name, value)
+  }
+
+  async get(name) {
+    let value = await this.sendAccessMessage(name)
+    return value
   }
 
   async call(name, ...args) {
