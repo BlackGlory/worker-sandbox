@@ -75,7 +75,6 @@ describe('Sandbox', function() {
       expect(result).to.equal('12345')
     })
 
-    /* BUG
     it('should assign and access a function', async function() {
       let sandbox = new Sandbox()
       await sandbox.set('sayHello', function() { return 'hello' })
@@ -83,7 +82,6 @@ describe('Sandbox', function() {
       expect(fn).to.be.a('function')
       expect(fn()).to.equal('hello')
     })
-    */
   })
 
   describe('#destory', function() {

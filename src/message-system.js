@@ -2,11 +2,8 @@
 
 import uuidV4 from 'uuid/v4'
 import EventTarget from 'event-target'
-import {
-  serializeFunction, unserializeFunction
-, serializeError, unserializeError
-} from './serialize'
 import _ from 'lodash'
+import { stringify, parse } from './json-helper'
 
 const RESOLVED = 'resolved'
 const REJECTED = 'rejected'
@@ -47,19 +44,23 @@ export class MessageSystem {
   constructor(worker, context = {}, permissions = []) {
     worker.addEventListener('message', ({ data }) => ({
       [RESOLVED]({ id, result }) {
-        this._aliveMessages[id].resolve(result)
+        if (result) {
+          this._aliveMessages[id].resolve(parse(result))
+        } else {
+          this._aliveMessages[id].resolve(result)
+        }
         delete this._aliveMessages[id]
       }
     , [REJECTED]({ id, error }) {
-        this._aliveMessages[id].reject(unserializeError(error))
+        this._aliveMessages[id].reject(parse(error))
         delete this._aliveMessages[id]
       }
     , [ASSIGN]({ id, name, value }) {
         if (!this._permissions.includes(PERMISSIONS.RECEIVE_ASSIGN)) {
-          return// throw new PermissionError('No permission RECEIVE_ASSIGN')
+          return this.dispatchError(new PermissionError('No permission RECEIVE_ASSIGN'))
         }
         try {
-          this._context[name] = value
+          this._context[name] = parse(value)
           this.sendResolvedMessage(id)
         } catch(e) {
           this.sendRejectedMessage(id, e)
@@ -67,13 +68,10 @@ export class MessageSystem {
       }
     , [ACCESS]({ id, name }) {
         if (!this._permissions.includes(PERMISSIONS.RECEIVE_ACCESS)) {
-          return// throw new PermissionError('No permission RECEIVE_ACCESS')
+          return this.dispatchError(new PermissionError('No permission RECEIVE_ACCESS'))
         }
         try {
           let value = this._context[name]
-          if (_.isFunction(value)) {
-            return this.sendResolvedMessage(id, serializeFunction(value))
-          }
           this.sendResolvedMessage(id, value)
         } catch(e) {
           this.sendRejectedMessage(id, e)
@@ -81,7 +79,7 @@ export class MessageSystem {
       }
     , [REMOVE]({ id, name }) {
         if (!this._permissions.includes(PERMISSIONS.RECEIVE_REMOVE)) {
-          return// throw new PermissionError('No permission RECEIVE_REMOVE')
+          return this.dispatchError(new PermissionError('No permission RECEIVE_REMOVE'))
         }
         try {
           delete this._context[name]
@@ -92,16 +90,16 @@ export class MessageSystem {
       }
     , [ERROR]({ error }) {
         if (!this._permissions.includes(PERMISSIONS.RECEIVE_ERROR)) {
-          return// throw new PermissionError('No permission RECEIVE_ERROR')
+          return this.dispatchError(new PermissionError('No permission RECEIVE_ERROR'))
         }
         this.dispatchEvent(new CustomEvent('error', {
-          details: error
+          details: parse(error)
         }))
       }
     , async [CALL]({ id, name, args }) {
         // TODO
         if (!this._permissions.includes(PERMISSIONS.RECEIVE_CALL)) {
-          return// throw new PermissionError('No permission RECEIVE_CALL')
+          return this.dispatchError(new PermissionError('No permission RECEIVE_CALL'))
         }
         if (typeof this._context[name] !== 'undefined') {
           try {
@@ -115,7 +113,7 @@ export class MessageSystem {
       }
     , async [EVAL]({ id, code }) {
         if (!this._permissions.includes(PERMISSIONS.RECEIVE_EVAL)) {
-          return// throw new PermissionError('No permission RECEIVE_EVAL')
+          return this.dispatchError(new PermissionError('No permission RECEIVE_EVAL'))
         }
         try {
           this.sendResolvedMessage(id, await runInContext(code, this._context))
@@ -147,11 +145,17 @@ export class MessageSystem {
     }
   }
 
+  dispatchError(error) {
+    this.dispatchEvent(new CustomEvent('error', {
+      details: error
+    }))
+  }
+
   sendResolvedMessage(id, result) {
     this._worker.postMessage({
       id
     , type: RESOLVED
-    , result
+    , result: stringify(result)
     })
   }
 
@@ -159,13 +163,13 @@ export class MessageSystem {
     this._worker.postMessage({
       id
     , type: REJECTED
-    , error: serializeError(error)
+    , error: stringify(error)
     })
   }
 
   sendEvalMessage(code) {
     if (!this._permissions.includes(PERMISSIONS.SEND_EVAL)) {
-      return //throw new PermissionError('No permission SEND_EVAL')
+      return this.dispatchError(new PermissionError('No permission SEND_EVAL'))
     }
     return new Promise((resolve, reject) => {
       let message = {
@@ -180,14 +184,14 @@ export class MessageSystem {
 
   sendAssignMessage(name, value) {
     if (!this._permissions.includes(PERMISSIONS.SEND_ASSIGN)) {
-      return //throw new PermissionError('No permission SEND_ASSIGN')
+      return this.dispatchError(new PermissionError('No permission SEND_ASSIGN'))
     }
     return new Promise((resolve, reject) => {
       let message = {
         id: uuidV4()
       , type: ASSIGN
       , name
-      , value
+      , value: stringify(value)
       }
       this._aliveMessages[message.id] = { resolve, reject }
       this._worker.postMessage(message)
@@ -196,7 +200,7 @@ export class MessageSystem {
 
   sendAccessMessage(name) {
     if (!this._permissions.includes(PERMISSIONS.SEND_ACCESS)) {
-      return //throw new PermissionError('No permission SEND_ACCESS')
+      return this.dispatchError(new PermissionError('No permission SEND_ACCESS'))
     }
     return new Promise((resolve, reject) => {
       let message = {
@@ -211,7 +215,7 @@ export class MessageSystem {
 
   sendRemoveMessage(name) {
     if (!this._permissions.includes(PERMISSIONS.SEND_REMOVE)) {
-      return// throw new PermissionError('No permission SEND_REMOVE')
+      return this.dispatchError(new PermissionError('No permission SEND_REMOVE'))
     }
     return new Promise((resolve, reject) => {
       let message = {
@@ -227,7 +231,7 @@ export class MessageSystem {
   sendCallMessage(name, ...args) {
     // TODO
     if (!this._permissions.includes(PERMISSIONS.SEND_CALL)) {
-      return// throw new PermissionError('No permission SEND_CALL')
+      return this.dispatchError(new PermissionError('No permission SEND_CALL'))
     }
     return new Promise((resolve, reject) => {
       let message = {
@@ -243,11 +247,11 @@ export class MessageSystem {
 
   sendErrorMessage(error) {
     if (!this._permissions.includes(PERMISSIONS.SEND_ERROR)) {
-      return// throw new PermissionError('No permission SEND_ERROR')
+      return this.dispatchError(new PermissionError('No permission SEND_ERROR'))
     }
     this._worker.postMessage({
       type: ERROR
-    , error: serializeError(error)
+    , error: stringify(error)
     })
   }
 }

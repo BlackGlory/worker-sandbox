@@ -3,8 +3,7 @@
     "latest"
   ]
 , "plugins": [
-    ["transform-object-rest-spread", { "useBuiltIns": true }]
-  , ["babel-plugin-transform-builtin-extend", { "globals": ["Error"] }]
+    ["babel-plugin-transform-builtin-extend", { "globals": ["Error"] }]
   , "transform-runtime"
   , "transform-remove-strict-mode"
   ]
