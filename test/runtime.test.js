@@ -36,6 +36,7 @@ describe('Runtime', function() {
       runtime.addEventListener('error', console.error)
       try {
         await runtime.eval('new Promise(resolve => setTimeout(resolve, 10000))', 1000)
+        expect(false).to.be.true
       } catch(e) {
         expect(e).to.be.a('error')
         expect(e instanceof TimeoutError).to.be.true
@@ -53,6 +54,7 @@ describe('Runtime', function() {
       let runtime = new Runtime()
       try {
         await runtime.execute('*****')
+        expect(false).to.be.true
       } catch(e) {
         expect(e instanceof SyntaxError).to.be.true
       }
@@ -67,9 +69,56 @@ describe('Runtime', function() {
         , result = await runtime.eval('a')
       expect(result).to.equal('hello world')
     })
+
+    it('should deep-copy context', async function() {
+      let context = {
+        a: 12345
+      , b: {
+          a: 12345
+        }
+      }
+      let runtime = new Runtime(context)
+      context.a = 54321
+      context.b.a = 54321
+      expect(await runtime.get('a')).to.equal(12345)
+      expect((await runtime.get('b')).a).to.equal(12345)
+    })
+
+    it('should can be overwrite', async function() {
+      let runtime = new Runtime({
+        a: 12345
+      })
+      await runtime.set('a', 54321)
+      expect(await runtime.get('a')).to.equal(54321)
+    })
   })
 
-  describe('#set, #get, #assign', function() {
+  describe('#context', function() {
+    /*
+    it('should sync', async function() {
+      let runtime = new Runtime({
+        a: 12345
+      , b() {
+          return 12345
+        }
+      , c: {
+          a: 12345
+        , b() {
+            return 12345
+          }
+        }
+      })
+      expect(await runtime.context.a).to.equal(12345)
+      expect((await runtime.context.b)()).to.equal(12345)
+      expect(await runtime.context.b()).to.equal(12345)
+      expect(await runtime.context.c.a).to.equal(12345)
+      expect((await runtime.context.c.b)()).to.equal(12345)
+      expect(await runtime.context.c.b()).to.equal(12345)
+    })
+    */
+  })
+
+  describe('#set, #get, #assign. #remove', function() {
     it('should set and get a number literal', async function() {
       let runtime = new Runtime()
       await runtime.set('a', 12345)
@@ -102,6 +151,18 @@ describe('Runtime', function() {
       expect(a).to.equal(12345)
       expect(b).to.equal(54321)
     })
+
+    it('should remove property', async function() {
+      let runtime = new Runtime()
+      await runtime.set('a', '12345')
+      await runtime.remove('a')
+      try {
+        let result = await runtime.get('a')
+        expect(result).to.not.be.undefined
+      } catch(e) {
+        expect(e instanceof ReferenceError).to.be.true
+      }
+    })
   })
 
   describe('#call', function() {
@@ -128,6 +189,7 @@ describe('Runtime', function() {
       runtime.destory()
       try {
         await runtime.eval('12345')
+        expect(false).to.be.true
       } catch(e) {
         expect(e.message).to.equal('No available Worker instance.')
       }

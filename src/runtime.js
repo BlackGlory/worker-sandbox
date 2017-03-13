@@ -30,21 +30,46 @@ export class Runtime extends MessageSystem {
     , PERMISSIONS.SEND_REMOVE
     , PERMISSIONS.RECEIVE_CALL
     ])
+
+    this.context = new Proxy(this._context, {
+      set: (obj, name, value) => {
+        obj[name] = value
+        try {
+          this.sendAssignMessage(name, value)
+        } catch(e) {}
+        return true
+      }
+    , deleteProperty: (obj, name) => {
+        delete obj[name]
+        this.sendRemoveMessage(name)
+      }
+    })
+    for (let name of Object.keys(context)) {
+      try {
+        this.sendAssignMessage(name, context[name])
+      } catch(e) {}
+    }
   }
 
   async set(name, value) {
-    return await this.sendAssignMessage(name, value)
+    await this.sendAssignMessage(name, value)
+    this._context[name] = value
   }
 
   async assign(obj) {
-    return await Promise.all(
+    await Promise.all(
       Object.keys(obj).map(name => this.sendAssignMessage(name, obj[name]))
     )
+    Object.assign(this._context, obj)
   }
 
   async get(name) {
     let value = await this.sendAccessMessage(name)
     return value
+  }
+
+  async remove(name) {
+    return await this.sendRemoveMessage(name)
   }
 
   async call(name, ...args) {

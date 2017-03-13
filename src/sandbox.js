@@ -7,27 +7,21 @@ export { TimeoutError, PermissionError } from './runtime'
 export class Sandbox extends Runtime {
   constructor(...args) {
     super(...args)
-    this.history = []
+    this._history = []
   }
 
   async save() {
-    this.history.push(_.cloneDeep(this.context))
+    this._history.push(_.cloneDeep(this._context))
   }
 
   async restore() {
-    // TODO
-    this.context = this.history.pop()
+    this.context = this._history.pop()
   }
 
   async clone() {
-    let sandbox = new Sandbox(this.context)
-    sandbox.history = _.cloneDeep(this.history)
-  }
-
-  async clear() {
-    // TODO
-    this.context = this.history[0]
-    this.history = [this.context]
+    let sandbox = new Sandbox(this._context)
+    sandbox._history = _.cloneDeep(this._history)
+    return sandbox
   }
 }
 

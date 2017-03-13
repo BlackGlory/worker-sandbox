@@ -71,8 +71,10 @@ export class MessageSystem extends EventTarget {
           if (!this._permissions.includes(PERMISSIONS.RECEIVE_ACCESS)) {
             throw new PermissionError('No permission RECEIVE_ACCESS')
           }
-          let value = this._context[name]
-          this.sendResolvedMessage(id, value)
+          if (!this._context.hasOwnProperty(name)) {
+            throw new ReferenceError(`${ name } is not defined`)
+          }
+          this.sendResolvedMessage(id, this._context[name])
         } catch(e) {
           this.sendRejectedMessage(id, e)
         }
@@ -96,11 +98,10 @@ export class MessageSystem extends EventTarget {
           if (!this._permissions.includes(PERMISSIONS.RECEIVE_CALL)) {
             throw new PermissionError('No permission RECEIVE_CALL')
           }
-          if (typeof this._context[name] !== 'undefined') {
-            this.sendResolvedMessage(id, await this._context[name](...parse(args)))
-          } else {
-            this.sendRejectedMessage(id, new ReferenceError(`${ name } is not defined`))
+          if (!this._context.hasOwnProperty(name)) {
+             throw new ReferenceError(`${ name } is not defined`)
           }
+          this.sendResolvedMessage(id, await this._context[name](...parse(args)))
         } catch(e) {
           this.sendRejectedMessage(id, e)
         }
@@ -123,24 +124,6 @@ export class MessageSystem extends EventTarget {
     this._permissions = permissions
     this._aliveMessages = {}
     this._context = context
-    this.context = new Proxy(this._context, {
-      set: (obj, name, value) => {
-        obj[name] = value
-        try {
-          this.sendAssignMessage(name, value)
-        } catch(e) {}
-        return true
-      }
-    , deleteProperty: (obj, name) => {
-        delete obj[name]
-        this.sendRemoveMessage(name)
-      }
-    })
-    for (let name of Object.keys(context)) {
-      try {
-        this.sendAssignMessage(name, context[name])
-      } catch(e) {}
-    }
   }
 
   dispatchError(error) {
