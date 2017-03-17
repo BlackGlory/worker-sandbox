@@ -24,9 +24,9 @@ function wrap(value) {
     Function(value) {
       let func = value.toString()
       if (value.name) {
-        let startsWithPosition = func.startsWith('*') ? 1 : 0 // is it generator?
+        // case for class method
+        let startsWithPosition = func.startsWith('*') ? 1 : 0 // case for Generator
         if (func.startsWith(value.name, startsWithPosition)) {
-          // { func() {} }
           return {
             expression: `({ ${ func } })${ convertPathListToString([ value.name ]) }`
           }
@@ -59,8 +59,11 @@ function wrap(value) {
 function unwrap(data) {
   const SwitchTree = {
     Function({ expression }) {
-      console.log(expression)
-      return eval(expression)
+      try {
+        return eval(expression)
+      } catch(e) {
+        return null
+      }
     }
   , Error({ name, message, stack }) {
       let err = new (window[name] || Error)(message)
@@ -84,7 +87,7 @@ export function replacer(key, value) {
 }
 
 export function reviver(key, value) {
-  if (validateSymbol(value)) {
+  if (value && validateSymbol(value)) {
     return unwrap(value)
   } else {
     return value
@@ -92,20 +95,10 @@ export function reviver(key, value) {
 }
 
 export function stringify(value, space) {
-  return JSON.stringify(value, replacer, space)
-}
-
-export function parse(text) {
-  if (_.isString(text)) {
-    return JSON.parse(text, reviver)
-  }
-}
-
-export function stringifyCircular(value, space) {
   return CircularJSON.stringify(value, replacer, space)
 }
 
-export function parseCircular(text) {
+export function parse(text) {
   if (_.isString(text)) {
     return CircularJSON.parse(text, reviver)
   }

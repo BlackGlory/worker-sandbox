@@ -9,6 +9,7 @@ import {
 , setPropertyByPath
 , deletePropertyByPath
 } from './proxy-helper'
+import runInContext from './run-in-context'
 
 const RESOLVED = 'resolved'
 const REJECTED = 'rejected'
@@ -30,10 +31,6 @@ export const PERMISSIONS = {
 , SEND_ACCESS: 'send_access'
 , SEND_CALL: 'send_call'
 , SEND_REMOVE: 'send_remove'
-}
-
-function runInContext(code, context) {
-  return eval.bind(context)(code)
 }
 
 export class PermissionError extends Error {
