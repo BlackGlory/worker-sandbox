@@ -4,6 +4,7 @@ import _ from 'lodash'
 import CircularJSON from 'circular-json'
 import project from '../package'
 import hash from 'object-hash'
+import { convertPathListToString } from './proxy-helper'
 
 const SYMBOL_KEY = hash.sha1(project)
 const SYMBOL_VALUE = hash.MD5(project)
@@ -21,8 +22,18 @@ function validateSymbol(obj) {
 function wrap(value) {
   const SwitchTree = {
     Function(value) {
+      let func = value.toString()
+      if (value.name) {
+        let startsWithPosition = func.startsWith('*') ? 1 : 0 // is it generator?
+        if (func.startsWith(value.name, startsWithPosition)) {
+          // { func() {} }
+          return {
+            expression: `({ ${ func } })${ convertPathListToString([ value.name ]) }`
+          }
+        }
+      }
       return {
-        expression: `(${ value.toString() })`
+        expression: `(${ func })`
       }
     }
   , Error(value) {
@@ -48,6 +59,7 @@ function wrap(value) {
 function unwrap(data) {
   const SwitchTree = {
     Function({ expression }) {
+      console.log(expression)
       return eval(expression)
     }
   , Error({ name, message, stack }) {

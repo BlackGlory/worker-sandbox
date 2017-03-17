@@ -4,6 +4,11 @@ import uuidV4 from 'uuid/v4'
 import EventTarget from 'event-target-shim'
 import _ from 'lodash'
 import { stringify, parse } from './json-helper'
+import {
+  getPropertyByPath
+, setPropertyByPath
+, deletePropertyByPath
+} from './proxy-helper'
 
 const RESOLVED = 'resolved'
 const REJECTED = 'rejected'
@@ -27,15 +32,15 @@ export const PERMISSIONS = {
 , SEND_REMOVE: 'send_remove'
 }
 
+function runInContext(code, context) {
+  return eval.bind(context)(code)
+}
+
 export class PermissionError extends Error {
   constructor(message) {
     super(message)
     this.name = 'PermissionError'
   }
-}
-
-function runInContext(code, context) {
-  return eval.bind(context)(code)
 }
 
 export class MessageSystem extends EventTarget {
@@ -55,36 +60,33 @@ export class MessageSystem extends EventTarget {
         this._aliveMessages[id].reject(parse(error))
         delete this._aliveMessages[id]
       }
-    , [ASSIGN]({ id, name, value }) {
+    , [ASSIGN]({ id, path, value }) {
         try {
           if (!this._permissions.includes(PERMISSIONS.RECEIVE_ASSIGN)) {
             throw new PermissionError('No permission RECEIVE_ASSIGN')
           }
-          this._context[name] = parse(value)
+          setPropertyByPath(this._context, path, parse(value))
           this.sendResolvedMessage(id)
         } catch(e) {
           this.sendRejectedMessage(id, e)
         }
       }
-    , [ACCESS]({ id, name }) {
+    , [ACCESS]({ id, path }) {
         try {
           if (!this._permissions.includes(PERMISSIONS.RECEIVE_ACCESS)) {
             throw new PermissionError('No permission RECEIVE_ACCESS')
           }
-          if (!this._context.hasOwnProperty(name)) {
-            throw new ReferenceError(`${ name } is not defined`)
-          }
-          this.sendResolvedMessage(id, this._context[name])
+          this.sendResolvedMessage(id, getPropertyByPath(this._context, path))
         } catch(e) {
           this.sendRejectedMessage(id, e)
         }
       }
-    , [REMOVE]({ id, name }) {
+    , [REMOVE]({ id, path }) {
         try {
           if (!this._permissions.includes(PERMISSIONS.RECEIVE_REMOVE)) {
             throw new PermissionError('No permission RECEIVE_REMOVE')
           }
-          delete this._context[name]
+          deletePropertyByPath(this._context, path)
           this.sendResolvedMessage(id)
         } catch(e) {
           this.sendRejectedMessage(id, e)
@@ -93,15 +95,12 @@ export class MessageSystem extends EventTarget {
     , [ERROR]({ error }) {
         this.dispatchError(parse(error))
       }
-    , async [CALL]({ id, name, args }) {
+    , async [CALL]({ id, path, args }) {
         try {
           if (!this._permissions.includes(PERMISSIONS.RECEIVE_CALL)) {
             throw new PermissionError('No permission RECEIVE_CALL')
           }
-          if (!this._context.hasOwnProperty(name)) {
-             throw new ReferenceError(`${ name } is not defined`)
-          }
-          this.sendResolvedMessage(id, await this._context[name](...parse(args)))
+          this.sendResolvedMessage(id, await getPropertyByPath(this._context, path)(...parse(args)))
         } catch(e) {
           this.sendRejectedMessage(id, e)
         }
@@ -170,7 +169,7 @@ export class MessageSystem extends EventTarget {
     })
   }
 
-  sendAssignMessage(name, value) {
+  sendAssignMessage(path, value) {
     if (!this._permissions.includes(PERMISSIONS.SEND_ASSIGN)) {
       throw new PermissionError('No permission SEND_ASSIGN')
     }
@@ -178,7 +177,7 @@ export class MessageSystem extends EventTarget {
       let message = {
         id: uuidV4()
       , type: ASSIGN
-      , name
+      , path
       , value: stringify(value)
       }
       this._aliveMessages[message.id] = { resolve, reject }
@@ -186,7 +185,7 @@ export class MessageSystem extends EventTarget {
     })
   }
 
-  sendAccessMessage(name) {
+  sendAccessMessage(path) {
     if (!this._permissions.includes(PERMISSIONS.SEND_ACCESS)) {
       throw new PermissionError('No permission SEND_ACCESS')
     }
@@ -194,14 +193,14 @@ export class MessageSystem extends EventTarget {
       let message = {
         id: uuidV4()
       , type: ACCESS
-      , name
+      , path
       }
       this._aliveMessages[message.id] = { resolve, reject }
       this.postMessage(message)
     })
   }
 
-  sendRemoveMessage(name) {
+  sendRemoveMessage(path) {
     if (!this._permissions.includes(PERMISSIONS.SEND_REMOVE)) {
       throw new PermissionError('No permission SEND_REMOVE')
     }
@@ -209,14 +208,14 @@ export class MessageSystem extends EventTarget {
       let message = {
         id: uuidV4()
       , type: REMOVE
-      , name
+      , path
       }
       this._aliveMessages[message.id] = { resolve, reject }
       this.postMessage(message)
     })
   }
 
-  sendCallMessage(name, ...args) {
+  sendCallMessage(path, ...args) {
     if (!this._permissions.includes(PERMISSIONS.SEND_CALL)) {
       throw new PermissionError('No permission SEND_CALL')
     }
@@ -224,7 +223,7 @@ export class MessageSystem extends EventTarget {
       let message = {
         id: uuidV4()
       , type: CALL
-      , name
+      , path
       , args: stringify(args)
       }
       this._aliveMessages[message.id] = { resolve, reject }

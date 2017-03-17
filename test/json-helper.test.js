@@ -11,6 +11,15 @@ describe('JSON', function() {
       expect(result()).to.equal(test())
     })
 
+    it('Generator', function() {
+      let test = function* () {
+            yield 12345
+          }
+        , result = parse(stringify(test))
+      expect(_.isFunction(result)).to.be.true
+      expect([...result()]).to.deep.equal([...test()])
+    })
+
     it('Error', function() {
       let test = new Error('12345')
         , result = parse(stringify(test))
@@ -34,6 +43,16 @@ describe('CircularJSON', function() {
         , result = parseCircular(stringifyCircular(test))
       expect(_.isFunction(result)).to.be.true
       expect(result()).to.equal(test())
+      expect(stringifyCircular(test)).to.equal(stringify(test))
+    })
+
+    it('Generator', function() {
+      let test = function* () {
+            yield 12345
+          }
+        , result = parseCircular(stringifyCircular(test))
+      expect(_.isFunction(result)).to.be.true
+      expect([...result()]).to.deep.equal([...test()])
       expect(stringifyCircular(test)).to.equal(stringify(test))
     })
 

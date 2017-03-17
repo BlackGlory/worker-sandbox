@@ -38,7 +38,6 @@ describe('Runtime', function() {
         await runtime.eval('new Promise(resolve => setTimeout(resolve, 10000))', 1000)
         expect(false).to.be.true
       } catch(e) {
-        expect(e).to.be.a('error')
         expect(e instanceof TimeoutError).to.be.true
       }
     })
@@ -61,42 +60,10 @@ describe('Runtime', function() {
     })
   })
 
-  describe('::constructor', function() {
-    it('should return context when eval with context', async function() {
-      let runtime = new Runtime({
-            a: 'hello world'
-          })
-        , result = await runtime.eval('a')
-      expect(result).to.equal('hello world')
-    })
-
-    it('should deep-copy context', async function() {
-      let context = {
-        a: 12345
-      , b: {
-          a: 12345
-        }
-      }
-      let runtime = new Runtime(context)
-      context.a = 54321
-      context.b.a = 54321
-      expect(await runtime.get('a')).to.equal(12345)
-      expect((await runtime.get('b')).a).to.equal(12345)
-    })
-
-    it('should can be overwrite', async function() {
-      let runtime = new Runtime({
-        a: 12345
-      })
-      await runtime.set('a', 54321)
-      expect(await runtime.get('a')).to.equal(54321)
-    })
-  })
-
   describe('#context', function() {
-    /*
-    it('should sync', async function() {
-      let runtime = new Runtime({
+    it('should accesible', async function() {
+      let runtime = new Runtime()
+      await runtime.assign({
         a: 12345
       , b() {
           return 12345
@@ -115,7 +82,6 @@ describe('Runtime', function() {
       expect((await runtime.context.c.b)()).to.equal(12345)
       expect(await runtime.context.c.b()).to.equal(12345)
     })
-    */
   })
 
   describe('#set, #get, #assign. #remove', function() {
@@ -145,32 +111,32 @@ describe('Runtime', function() {
       await runtime.assign({
         a: 12345
       , b: 54321
+      , c(test) {
+          return test
+        }
       })
       let a = await runtime.get('a')
         , b = await runtime.get('b')
+        , c = await runtime.get('c')
       expect(a).to.equal(12345)
       expect(b).to.equal(54321)
+      expect(c(12345)).to.equal(12345)
     })
 
     it('should remove property', async function() {
       let runtime = new Runtime()
       await runtime.set('a', '12345')
       await runtime.remove('a')
-      try {
-        let result = await runtime.get('a')
-        expect(result).to.not.be.undefined
-      } catch(e) {
-        expect(e instanceof ReferenceError).to.be.true
-      }
+      let result = await runtime.get('a')
+      expect(result).to.be.undefined
     })
   })
 
   describe('#call', function() {
     it('should return value', async function() {
-      let runtime = new Runtime({
-        a: function(value) {
-          return value
-        }
+      let runtime = new Runtime()
+      await runtime.set('a', function(value) {
+        return value
       })
       let result = await runtime.call('a', 12345)
       expect(result).to.equal(12345)

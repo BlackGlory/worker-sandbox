@@ -3,6 +3,7 @@
 import uuidV4 from 'uuid/v4'
 import { MessageSystem, PERMISSIONS } from './message-system'
 import AdvancedWorker from 'worker-loader?inline&fallback=false!./worker.js'
+import { createProxyHub, convertPathListToString } from './proxy-helper'
 
 export class TimeoutError extends Error {
   constructor(message) {
@@ -20,9 +21,9 @@ function timeoutReject(timeout, message = 'timeout') {
 }
 
 export class Runtime extends MessageSystem {
-  constructor(context = {}) {
+  constructor() {
     let worker = new AdvancedWorker()
-    super(worker, context, [
+    super(worker, {}, [
       PERMISSIONS.SEND_ASSIGN
     , PERMISSIONS.SEND_EVAL
     , PERMISSIONS.SEND_CALL
@@ -31,49 +32,45 @@ export class Runtime extends MessageSystem {
     , PERMISSIONS.RECEIVE_CALL
     ])
 
-    this.context = new Proxy(this._context, {
-      set: (obj, name, value) => {
-        obj[name] = value
-        try {
-          this.sendAssignMessage(name, value)
-        } catch(e) {}
-        return true
+    this.context = createProxyHub({}, {
+      get: async (target, path) => {
+        return await this.get(convertPathListToString(path))
       }
-    , deleteProperty: (obj, name) => {
-        delete obj[name]
-        this.sendRemoveMessage(name)
+    , apply: async (target, path, caller, args) => {
+        return await this.call(convertPathListToString(path), ...args)
+      }
+    , set: async (target, path, value) => {
+        return await this.set(convertPathListToString(path), value)
+      }
+    , deleteProperty: async (target, path) => {
+        return await this.remove(convertPathListToString(path))
       }
     })
-    for (let name of Object.keys(context)) {
-      try {
-        this.sendAssignMessage(name, context[name])
-      } catch(e) {}
-    }
   }
 
-  async set(name, value) {
-    await this.sendAssignMessage(name, value)
-    this._context[name] = value
+  async set(path, value) {
+    await this.sendAssignMessage(path, value)
   }
 
   async assign(obj) {
     await Promise.all(
-      Object.keys(obj).map(name => this.sendAssignMessage(name, obj[name]))
+      Object.keys(obj).map(path => {
+        this.set(path, obj[path])
+      })
     )
-    Object.assign(this._context, obj)
   }
 
-  async get(name) {
-    let value = await this.sendAccessMessage(name)
+  async get(path) {
+    let value = await this.sendAccessMessage(path)
     return value
   }
 
-  async remove(name) {
-    return await this.sendRemoveMessage(name)
+  async remove(path) {
+    return await this.sendRemoveMessage(path)
   }
 
-  async call(name, ...args) {
-    return await this.sendCallMessage(name, ...args)
+  async call(path, ...args) {
+    return await this.sendCallMessage(path, ...args)
   }
 
   async eval(code, timeout) {

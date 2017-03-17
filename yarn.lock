@@ -492,17 +492,17 @@ babel-plugin-transform-es2015-literals@^6.22.0:
   dependencies:
     babel-runtime "^6.22.0"
 
-babel-plugin-transform-es2015-modules-amd@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-modules-amd/-/babel-plugin-transform-es2015-modules-amd-6.22.0.tgz#bf69cd34889a41c33d90dfb740e0091ccff52f21"
+babel-plugin-transform-es2015-modules-amd@^6.24.0:
+  version "6.24.0"
+  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-modules-amd/-/babel-plugin-transform-es2015-modules-amd-6.24.0.tgz#a1911fb9b7ec7e05a43a63c5995007557bcf6a2e"
   dependencies:
-    babel-plugin-transform-es2015-modules-commonjs "^6.22.0"
+    babel-plugin-transform-es2015-modules-commonjs "^6.24.0"
     babel-runtime "^6.22.0"
     babel-template "^6.22.0"
 
-babel-plugin-transform-es2015-modules-commonjs@^6.22.0:
-  version "6.23.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-modules-commonjs/-/babel-plugin-transform-es2015-modules-commonjs-6.23.0.tgz#cba7aa6379fb7ec99250e6d46de2973aaffa7b92"
+babel-plugin-transform-es2015-modules-commonjs@^6.24.0:
+  version "6.24.0"
+  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-modules-commonjs/-/babel-plugin-transform-es2015-modules-commonjs-6.24.0.tgz#e921aefb72c2cc26cb03d107626156413222134f"
   dependencies:
     babel-plugin-transform-strict-mode "^6.22.0"
     babel-runtime "^6.22.0"
@@ -517,11 +517,11 @@ babel-plugin-transform-es2015-modules-systemjs@^6.22.0:
     babel-runtime "^6.22.0"
     babel-template "^6.23.0"
 
-babel-plugin-transform-es2015-modules-umd@^6.22.0:
-  version "6.23.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-modules-umd/-/babel-plugin-transform-es2015-modules-umd-6.23.0.tgz#8d284ae2e19ed8fe21d2b1b26d6e7e0fcd94f0f1"
+babel-plugin-transform-es2015-modules-umd@^6.24.0:
+  version "6.24.0"
+  resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-modules-umd/-/babel-plugin-transform-es2015-modules-umd-6.24.0.tgz#fd5fa63521cae8d273927c3958afd7c067733450"
   dependencies:
-    babel-plugin-transform-es2015-modules-amd "^6.22.0"
+    babel-plugin-transform-es2015-modules-amd "^6.24.0"
     babel-runtime "^6.22.0"
     babel-template "^6.23.0"
 
@@ -630,9 +630,9 @@ babel-polyfill@^6.23.0:
     core-js "^2.4.0"
     regenerator-runtime "^0.10.0"
 
-babel-preset-es2015@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-preset-es2015/-/babel-preset-es2015-6.22.0.tgz#af5a98ecb35eb8af764ad8a5a05eb36dc4386835"
+babel-preset-es2015@^6.24.0:
+  version "6.24.0"
+  resolved "https://registry.yarnpkg.com/babel-preset-es2015/-/babel-preset-es2015-6.24.0.tgz#c162d68b1932696e036cd3110dc1ccd303d2673a"
   dependencies:
     babel-plugin-check-es2015-constants "^6.22.0"
     babel-plugin-transform-es2015-arrow-functions "^6.22.0"
@@ -645,10 +645,10 @@ babel-preset-es2015@^6.22.0:
     babel-plugin-transform-es2015-for-of "^6.22.0"
     babel-plugin-transform-es2015-function-name "^6.22.0"
     babel-plugin-transform-es2015-literals "^6.22.0"
-    babel-plugin-transform-es2015-modules-amd "^6.22.0"
-    babel-plugin-transform-es2015-modules-commonjs "^6.22.0"
+    babel-plugin-transform-es2015-modules-amd "^6.24.0"
+    babel-plugin-transform-es2015-modules-commonjs "^6.24.0"
     babel-plugin-transform-es2015-modules-systemjs "^6.22.0"
-    babel-plugin-transform-es2015-modules-umd "^6.22.0"
+    babel-plugin-transform-es2015-modules-umd "^6.24.0"
     babel-plugin-transform-es2015-object-super "^6.22.0"
     babel-plugin-transform-es2015-parameters "^6.22.0"
     babel-plugin-transform-es2015-shorthand-properties "^6.22.0"
@@ -678,11 +678,11 @@ babel-preset-jest@^19.0.0:
   dependencies:
     babel-plugin-jest-hoist "^19.0.0"
 
-babel-preset-latest@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-preset-latest/-/babel-preset-latest-6.22.0.tgz#47b800531350a3dc69126e8c375a40655cd1eeff"
+babel-preset-latest@^6.24.0:
+  version "6.24.0"
+  resolved "https://registry.yarnpkg.com/babel-preset-latest/-/babel-preset-latest-6.24.0.tgz#a68d20f509edcc5d7433a48dfaebf7e4f2cd4cb7"
   dependencies:
-    babel-preset-es2015 "^6.22.0"
+    babel-preset-es2015 "^6.24.0"
     babel-preset-es2016 "^6.22.0"
     babel-preset-es2017 "^6.22.0"
 
@@ -2412,9 +2412,9 @@ karma-mocha@^1.3.0:
   dependencies:
     minimist "1.2.0"
 
-karma-webpack@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/karma-webpack/-/karma-webpack-2.0.2.tgz#bd38350af5645c9644090770939ebe7ce726f864"
+karma-webpack@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/karma-webpack/-/karma-webpack-2.0.3.tgz#39cebf5ca2580139b27f9ae69b78816b9c82fae6"
   dependencies:
     async "~0.9.0"
     loader-utils "^0.2.5"
@@ -2837,6 +2837,10 @@ object-component@0.0.3:
 object-hash@^1.1.7:
   version "1.1.7"
   resolved "https://registry.yarnpkg.com/object-hash/-/object-hash-1.1.7.tgz#a8d83fdf5d4583a4e2e7ffc18e8915e08482ef52"
+
+object-resolve-path@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/object-resolve-path/-/object-resolve-path-1.1.1.tgz#a7f8f93e8a20af80e44217ba7db54316d9d12232"
 
 object.omit@^2.0.0:
   version "2.0.1"
