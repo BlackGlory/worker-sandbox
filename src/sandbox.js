@@ -4,6 +4,7 @@ import uuidV4 from 'uuid/v4'
 import { MessageSystem, PERMISSIONS } from './message-system'
 import AdvancedWorker from 'worker-loader?inline&fallback=false!./worker.js'
 import { createProxyHub, convertPathListToString } from './proxy-helper'
+import isFunction from 'lodash/isFunction'
 
 export class TimeoutError extends Error {
   constructor(message) {
@@ -74,7 +75,7 @@ export class Sandbox extends MessageSystem {
   }
 
   async eval(code, timeout) {
-    if (_.isFunction(code)) {
+    if (isFunction(code)) {
       code = `(${ code })()`
     }
     if (timeout) {

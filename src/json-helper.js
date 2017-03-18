@@ -1,6 +1,10 @@
 'use strict'
 
-import _ from 'lodash'
+import isPlainObject from 'lodash/isPlainObject'
+import isString from 'lodash/isString'
+import isRegExp from 'lodash/isRegExp'
+import isError from 'lodash/isError'
+import isFunction from 'lodash/isFunction'
 import CircularJSON from 'circular-json'
 import project from '../package'
 import hash from 'object-hash'
@@ -50,7 +54,11 @@ function wrap(value) {
     }
   }
   for (let type of Object.keys(SwitchTree)) {
-    if (_[`is${ type }`](value)) {
+    if ({
+      isFunction
+    , isError
+    , isRegExp
+    }[`is${ type }`](value)) {
       return Object.assign({}, SwitchTree[type](value), { type })
     }
   }
@@ -79,7 +87,7 @@ function unwrap(data) {
 
 export function replacer(key, value) {
   let wrapped = wrap(value)
-  if (_.isPlainObject(wrapped)) {
+  if (isPlainObject(wrapped)) {
     return markSymbol(wrapped)
   } else {
     return value
@@ -99,7 +107,7 @@ export function stringify(value, space) {
 }
 
 export function parse(text) {
-  if (_.isString(text)) {
+  if (isString(text)) {
     return CircularJSON.parse(text, reviver)
   }
 }

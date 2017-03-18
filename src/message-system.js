@@ -2,7 +2,6 @@
 
 import uuidV4 from 'uuid/v4'
 import EventTarget from 'event-target-shim'
-import _ from 'lodash'
 import { stringify, parse } from './json-helper'
 import {
   getPropertyByPath

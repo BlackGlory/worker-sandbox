@@ -1,5 +1,3 @@
-import _ from 'lodash'
-
 export function convertPathListToString(list) {
   return list.map(x => `["${ x.replace(/\"/g, '\\"') }"]`).join('')
 }

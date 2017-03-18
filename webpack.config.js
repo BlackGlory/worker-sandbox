@@ -3,7 +3,6 @@ const webpack = require('webpack')
 
 module.exports = {
   target: 'web'
-//devtool: 'source-map'
 , entry: {
     'sandbox': './src/sandbox.js'
   , 'sandbox.min': './src/sandbox.js'
@@ -28,6 +27,12 @@ module.exports = {
       include: /\.min\.js$/
     , compress: {
         warnings: false
+      }
+    , comments: false
+    })
+  , new webpack.DefinePlugin({
+      'process.env': {
+        'NODE_ENV': JSON.stringify('production')
       }
     })
   ]

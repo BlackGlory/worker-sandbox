@@ -9,6 +9,7 @@ module.exports = function(config) {
   , preprocessors: {
       'test/**/*.test.js': ['webpack']
     }
+  //, webpack: require('./webpack.config')
   , reporters: ['mocha']
   , port: 9876
   , colors: true

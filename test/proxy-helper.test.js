@@ -4,9 +4,6 @@ import {
 , getPropertyByPath
 , setPropertyByPath
 , deletePropertyByPath
-, getPropertyByPath
-, setPropertyByPath
-, deletePropertyByPath
 , convertPathListToString
 } from '../src/proxy-helper'
 

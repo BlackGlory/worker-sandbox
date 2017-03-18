@@ -1,10 +1,15 @@
 {
   "presets": [
-    "latest"
+    ["latest", {
+      "es2015": {
+        "loose": true
+      , "modules": false
+      }
+    }]
   ]
 , "plugins": [
-    ["babel-plugin-transform-builtin-extend", { "globals": ["Error"] }]
-  , "transform-runtime"
-  , "transform-remove-strict-mode"
+    "transform-runtime"
+  , "transform-object-rest-spread"
+  , ["babel-plugin-transform-builtin-extend", { "globals": ["Error"] }]
   ]
 }
