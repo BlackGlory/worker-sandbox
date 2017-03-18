@@ -2,9 +2,7 @@
 
 import { MessageSystem, PERMISSIONS } from './message-system'
 
-self.window = self
-
-new MessageSystem(self, self.window, [
+new MessageSystem(self, self, [
   PERMISSIONS.RECEIVE_EVAL
 , PERMISSIONS.RECEIVE_CALL
 , PERMISSIONS.RECEIVE_ASSIGN

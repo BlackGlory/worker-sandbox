@@ -44,7 +44,7 @@ describe('Sandbox', function() {
 
     it('should return new value', async function() {
       let sandbox = new Sandbox()
-      await sandbox.execute('window.a = "hello world"')
+      await sandbox.execute('self.a = "hello world"')
       let result = await sandbox.eval('a')
       expect(result).to.equal('hello world')
     })

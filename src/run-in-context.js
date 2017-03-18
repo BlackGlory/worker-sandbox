@@ -2,31 +2,26 @@
 
 import _ from 'lodash'
 
-export function runInContext(code, context) {
-  function softWith() {
-    const BANED_VAR = [
-      'postMessage'
-    , 'addEventListener'
-    , 'close'
-    , 'self'
-    , 'window'
-    , 'softWith'
-    , 'runInContext'
-    , 'code'
-    , 'context'
-    , 'BANED_VAR'
-    , '_'
-    ]
-    return `var ${ BANED_VAR.join(', ') }`
-  }
-
+export function runInContext(code, context = {}) {
   if (_.isString(code)) {
-    return eval.bind(context)(`${ softWith() }; ${ code }`)
-  } else if (_.isFunction(code)) {
-    eval(softWith())
-    return code.bind(context)()
+    let keys, values
+    keys = _.uniq([
+      ...Object.keys({
+        keys
+      , values
+      , code
+      , context
+      , runInContext
+      , _
+      })
+    , ...Object.keys(context)
+    ]).filter(x => /^[_\$\w][\d\w\$_]*$/.test(x))
+    values = keys.map(x => context[x])
+    return eval(`(function(${ keys.join(', ') }) {
+      return eval(${ JSON.stringify(code) })
+    })`)(...values)
   } else {
-    throw new TypeError('First argument should be a function or string')
+    throw new TypeError('First argument must be a string')
   }
 }
 
