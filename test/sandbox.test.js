@@ -60,6 +60,32 @@ describe('Sandbox', function() {
     })
   })
 
+  describe('#define, #cancel', function() {
+    it('should define function', async function() {
+      const a = 'Hello'
+      let sandbox = new Sandbox()
+      await sandbox.define('sayHello', function() {
+        return a
+      })
+      expect(await sandbox.eval('sayHello()')).to.equal(a)
+    })
+
+    it('should cancel function', async function() {
+      const a = 'Hello'
+      let sandbox = new Sandbox()
+      await sandbox.define('sayHello', function() {
+        return a
+      })
+      await sandbox.cancel('sayHello')
+      try {
+        await sandbox.eval('sayHello()')
+        expect(false).to.be.true
+      } catch(e) {
+        expect(e instanceof ReferenceError).to.be.true
+      }
+    })
+  })
+
   describe('#context', function() {
     it('should accesible', async function() {
       let sandbox = new Sandbox()

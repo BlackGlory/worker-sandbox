@@ -1,10 +1,15 @@
 'use strict'
 
 import uuidV4 from 'uuid/v4'
-import { MessageSystem, PERMISSIONS } from './message-system'
-import AdvancedWorker from 'worker-loader?inline&fallback=false!./worker.js'
-import { createProxyHub, convertPathListToString } from './proxy-helper'
 import isFunction from 'lodash/isFunction'
+import { MessageSystem, PERMISSIONS } from './message-system'
+import SandboxWorker from 'worker-loader?inline&fallback=false!./worker.js'
+import {
+  createProxyHub
+, convertPathListToString
+, setPropertyByPath
+, deletePropertyByPath
+} from './proxy-helper'
 
 export class TimeoutError extends Error {
   constructor(message) {
@@ -23,17 +28,31 @@ function timeoutReject(timeout, message = 'timeout') {
 
 export class Sandbox extends MessageSystem {
   constructor() {
-    let worker = new AdvancedWorker()
-    super(worker, {}, [
+    let worker = new SandboxWorker()
+      , callable = {}
+
+    super(worker, callable, [
       PERMISSIONS.SEND_ASSIGN
     , PERMISSIONS.SEND_EVAL
     , PERMISSIONS.SEND_CALL
     , PERMISSIONS.SEND_ACCESS
     , PERMISSIONS.SEND_REMOVE
+    , PERMISSIONS.SEND_DEFINE
     , PERMISSIONS.RECEIVE_CALL
     ])
 
-    this.context = createProxyHub({}, {
+    this._callable = callable
+
+    this.callable = createProxyHub(this._callable, {
+      set: async (target, path, value) => {
+        return await this.define(path, value)
+      }
+    , deleteProperty: async (target, path) => {
+        return await this.cancel(path)
+      }
+    })
+
+    this.context = createProxyHub(this._context, {
       get: async (target, path) => {
         return await this.get(convertPathListToString(path))
       }
@@ -47,6 +66,16 @@ export class Sandbox extends MessageSystem {
         return await this.remove(convertPathListToString(path))
       }
     })
+  }
+
+  async define(path, value) {
+    setPropertyByPath(this._callable, path, value)
+    return await this.sendDefineMessage(path, value)
+  }
+
+  async cancel(path) {
+    deletePropertyByPath(this._callable, path)
+    return await this.sendRemoveMessage(path)
   }
 
   async set(path, value) {
