@@ -7,6 +7,7 @@ module.exports = {
     'sandbox': './src/sandbox.js'
   , 'sandbox.min': './src/sandbox.js'
   }
+, devtool: 'inline-source-map'
 , output: {
     path: path.resolve(__dirname, 'dist')
   , filename: '[name].js'
@@ -17,7 +18,7 @@ module.exports = {
     rules: [
       {
         test: /\.js$/
-      , exclude: /node_modules/
+      , exclude: [/node_modules/, path.resolve(__dirname, 'test')]
       , use: 'babel-loader'
       }
     ]
@@ -29,11 +30,7 @@ module.exports = {
         warnings: false
       }
     , comments: false
-    })
-  , new webpack.DefinePlugin({
-      'process.env': {
-        'NODE_ENV': JSON.stringify('production')
-      }
+    , sourceMap: true
     })
   ]
 }

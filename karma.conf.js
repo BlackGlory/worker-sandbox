@@ -7,9 +7,10 @@ module.exports = function(config) {
     ]
   , exclude: []
   , preprocessors: {
-      'test/**/*.test.js': ['webpack']
+      'test/**/*.test.js': ['webpack', 'sourcemap']
     }
-  , reporters: ['mocha']
+  , webpack: require('./webpack.config')
+  , reporters: ['mocha', 'coverage']
   , port: 9876
   , colors: true
   , logLevel: config.LOG_INFO

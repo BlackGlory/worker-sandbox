@@ -3,7 +3,7 @@
 import uuidV4 from 'uuid/v4'
 import isFunction from 'lodash/isFunction'
 import { MessageSystem, PERMISSIONS } from './message-system'
-import SandboxWorker from 'worker-loader?inline&fallback=false!./worker.js'
+import SandboxWorker from 'worker-loader?inline&name=worker.js!./worker.js'
 import {
   createProxyHub
 , convertPathListToString
@@ -68,9 +68,9 @@ export class Sandbox extends MessageSystem {
     })
   }
 
-  async define(path, value) {
-    setPropertyByPath(this._callable, path, value)
-    return await this.sendDefineMessage(path, value)
+  async define(path, func) {
+    setPropertyByPath(this._callable, path, func)
+    return await this.sendDefineMessage(path, func)
   }
 
   async cancel(path) {
