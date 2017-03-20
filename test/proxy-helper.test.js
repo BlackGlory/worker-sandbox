@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import {
-  createProxyHub
+  createAsyncProxyHub
 , getPropertyByPath
 , setPropertyByPath
 , deletePropertyByPath
@@ -8,8 +8,45 @@ import {
 } from '../src/proxy-helper'
 
 describe('Proxy', function() {
-  describe('createProxyHub', function() {
-    it('should access property by proxy', async function() {
+  describe('createAsyncProxyHub ', function() {
+    it('should get, set, apply, delete property by defaultHandler', async function() {
+      const example = {
+        fn(test) {
+          return test
+        }
+      , obj: {
+          fn(test) {
+            return test
+          }
+        }
+      }
+
+      let pp = createAsyncProxyHub(example)
+      expect(await pp).to.deep.equal(example)
+      expect(await pp.fn(1)).to.equal(example.fn(1))
+      expect(await pp.obj).to.deep.equal(example.obj)
+      expect(await pp.obj.fn(2)).to.equal(example.obj.fn(2))
+      pp.num = 12345
+      expect(await pp.num).to.equal(12345)
+      delete pp.num
+      expect(await pp.num).to.equal(undefined)
+    })
+
+    it('should throw Error when get handler throw Error', async function() {
+      let pp = createAsyncProxyHub({}, {
+        get() {
+          throw new Error('just an error')
+        }
+      })
+      try {
+        await pp
+        expect(false).to.be.true
+      } catch(e) {
+        expect(e.message).to.equal('just an error')
+      }
+    })
+
+    it('should get property', async function() {
       const example = {
         fn(test) {
           return test
@@ -25,7 +62,7 @@ describe('Proxy', function() {
         }
       }
 
-      let pp = createProxyHub(example, {
+      let pp = createAsyncProxyHub(example, {
         async get(target, path) {
           return getPropertyByPath(target, convertPathListToString(path))
         }
@@ -34,11 +71,12 @@ describe('Proxy', function() {
       expect(await pp).to.deep.equal(example)
       expect((await pp.fn)(1)).to.equal(example.fn(1))
       expect(await (await pp.asyncFn)(2)).to.equal(await example.asyncFn(2))
+      expect(await pp.num).to.equal(example.num)
       expect(await pp.obj).to.deep.equal(example.obj)
       expect((await pp.obj.fn)(3)).to.equal(example.fn(3))
     })
 
-    it('should call function by proxy', async function() {
+    it('should apply function', async function() {
       const example = {
         fn(test) {
           return test
@@ -54,7 +92,7 @@ describe('Proxy', function() {
         }
       }
 
-      let pp = createProxyHub(example, {
+      let pp = createAsyncProxyHub(example, {
         async apply(target, path, caller, args) {
           return getPropertyByPath(target, convertPathListToString(path)).apply(caller, args)
         }
@@ -65,10 +103,10 @@ describe('Proxy', function() {
       expect(await pp.obj.fn(3)).to.equal(example.fn(3))
     })
 
-    it('should assign property by proxy', async function() {
+    it('should assign property', async function() {
       const example = {}
 
-      let pp = createProxyHub(example, {
+      let pp = createAsyncProxyHub(example, {
         async set(target, path, value) {
           return setPropertyByPath(target, convertPathListToString(path), value)
         }
@@ -79,12 +117,12 @@ describe('Proxy', function() {
       expect(await pp.num).to.equal(12345)
     })
 
-    it('should remove peoperty by proxy', async function() {
+    it('should remove peoperty', async function() {
       const example = {
         num: 12345
       }
 
-      let pp = createProxyHub(example, {
+      let pp = createAsyncProxyHub(example, {
         async deleteProperty(target, path) {
           return deletePropertyByPath(target, convertPathListToString(path))
         }

@@ -31,9 +31,15 @@ describe('Sandbox', function() {
       expect(result).to.equal(12345)
     })
 
-    it('should throw a TimeoutError when timeout', async function() {
+    it('should return new value', async function() {
       let sandbox = new Sandbox()
-      sandbox.addEventListener('error', console.error)
+      await sandbox.execute('self.a = "hello world"')
+      let result = await sandbox.eval('a')
+      expect(result).to.equal('hello world')
+    })
+
+    it('should throw a TimeoutError', async function() {
+      let sandbox = new Sandbox()
       try {
         await sandbox.eval('new Promise(resolve => setTimeout(resolve, 10000))', 1000)
         expect(false).to.be.true
@@ -42,17 +48,10 @@ describe('Sandbox', function() {
       }
     })
 
-    it('should return new value', async function() {
-      let sandbox = new Sandbox()
-      await sandbox.execute('self.a = "hello world"')
-      let result = await sandbox.eval('a')
-      expect(result).to.equal('hello world')
-    })
-
-    it('should throw SyntaxError', async function() {
+    it('should throw a SyntaxError', async function() {
       let sandbox = new Sandbox()
       try {
-        await sandbox.execute('*****')
+        await sandbox.eval('*****', 1000)
         expect(false).to.be.true
       } catch(e) {
         expect(e instanceof SyntaxError).to.be.true
@@ -60,23 +59,23 @@ describe('Sandbox', function() {
     })
   })
 
-  describe('#define, #cancel', function() {
-    it('should define function', async function() {
+  describe('#registerCall, #cancelCall', function() {
+    it('should register a callable function', async function() {
       const a = 'Hello'
       let sandbox = new Sandbox()
-      await sandbox.define('sayHello', function() {
+      await sandbox.registerCall('sayHello', function() {
         return a
       })
       expect(await sandbox.eval('sayHello()')).to.equal(a)
     })
 
-    it('should cancel function', async function() {
+    it('should cancel a callable function', async function() {
       const a = 'Hello'
       let sandbox = new Sandbox()
-      await sandbox.define('sayHello', function() {
+      await sandbox.registerCall('sayHello', function() {
         return a
       })
-      await sandbox.cancel('sayHello')
+      await sandbox.cancelCall('sayHello')
       try {
         await sandbox.eval('sayHello()')
         expect(false).to.be.true
@@ -110,7 +109,33 @@ describe('Sandbox', function() {
     })
   })
 
-  describe('#set, #get, #assign. #remove', function() {
+  describe('#callable', function() {
+    it('should get, set, delete', async function() {
+      let sandbox = new Sandbox()
+      try {
+        sandbox.callable.num = 12345
+        expect(false).to.be.true
+      } catch(e) {
+        expect(e.message).to.equal('value must be function')
+      }
+      sandbox.callable.fn = () => 12345
+      expect(await sandbox.callable.fn()).to.equal(12345)
+      delete sandbox.callable.fn
+      expect(await sandbox.callable.fn).to.be.undefined
+    })
+  })
+
+  describe('#context', function() {
+    it('should get, set, delete', async function() {
+      let sandbox = new Sandbox()
+      sandbox.context.num = 12345
+      expect(await sandbox.context.num).to.equal(12345)
+      delete sandbox.context.num
+      expect(await sandbox.context.num).to.be.undefined
+    })
+  })
+
+  describe('#set, #get, #assign, #remove', function() {
     it('should set and get a number literal', async function() {
       let sandbox = new Sandbox()
       await sandbox.set('a', 12345)

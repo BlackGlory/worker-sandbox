@@ -1,8 +1,10 @@
+class CallableFunction extends Function {}
+
 export function convertPathListToString(list) {
   return list.map(x => `["${ x.replace(/\"/g, '\\"') }"]`).join('')
 }
 
-export function createProxyHub(target, handler) {
+export function createAsyncProxyHub(target, handler = {}) {
   const defaultHandler = {
     get(target, path) {
       return getPropertyByPath(target, convertPathListToString(path))
@@ -21,7 +23,7 @@ export function createProxyHub(target, handler) {
   handler = Object.assign({}, defaultHandler, handler)
 
   function wrapper(path = []) {
-    return new Proxy(function() {}, {
+    return new Proxy(CallableFunction, {
       get(_, prop) {
         if (['then', 'catch'].includes(prop)) {
           let promise = new Promise(async function(resolve, reject) {

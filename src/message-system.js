@@ -18,7 +18,7 @@ const ACCESS = 'access'
 const EVAL = 'eval'
 const REMOVE = 'remove'
 const ERROR = 'error'
-const DEFINE = 'define'
+const REGISTER = 'register'
 
 export const PERMISSIONS = {
   RECEIVE_EVAL: 'receive_eval'
@@ -26,18 +26,18 @@ export const PERMISSIONS = {
 , RECEIVE_ACCESS: 'receive_access'
 , RECEIVE_CALL: 'receive_call'
 , RECEIVE_REMOVE: 'receive_remove'
-, RECEIVE_DEFINE: 'receive_define'
+, RECEIVE_REGISTER: 'receive_register'
 , SEND_EVAL: 'send_eval'
 , SEND_ASSIGN: 'send_assign'
 , SEND_ACCESS: 'send_access'
 , SEND_CALL: 'send_call'
 , SEND_REMOVE: 'send_remove'
-, SEND_DEFINE: 'send_define'
+, SEND_REGISTER: 'send_register'
 }
 
 export class PermissionError extends Error {
-  constructor(message) {
-    super(message)
+  constructor(...args) {
+    super(...args)
     this.name = 'PermissionError'
   }
 }
@@ -46,7 +46,7 @@ export class MessageSystem extends EventTarget {
   constructor(worker, context = {}, permissions = []) {
     super()
 
-    worker.addEventListener('message', ({ data }) => ({
+    worker.addEventListener('message', ({ data }) => (({
       [RESOLVED]({ id, result }) {
         if (result) {
           this._aliveMessages[id].resolve(parse(result))
@@ -70,13 +70,12 @@ export class MessageSystem extends EventTarget {
           this.sendRejectedMessage(id, e)
         }
       }
-    , [DEFINE]({ id, path }) {
+    , [REGISTER]({ id, path }) {
         try {
-          if (!this._permissions.includes(PERMISSIONS.RECEIVE_DEFINE)) {
-            throw new PermissionError('No permission RECEIVE_DEFINE')
+          if (!this._permissions.includes(PERMISSIONS.RECEIVE_REGISTER)) {
+            throw new PermissionError('No permission RECEIVE_REGISTER')
           }
-          setPropertyByPath(this._context, path, async (...args) =>
-            await this.sendCallMessage(path, ...args))
+          setPropertyByPath(this._context, path, (...args) => this.sendCallMessage(path, ...args))
           this.sendResolvedMessage(id)
         } catch(e) {
           this.sendRejectedMessage(id, e)
@@ -126,7 +125,7 @@ export class MessageSystem extends EventTarget {
           this.sendRejectedMessage(id, e)
         }
       }
-    })[data.type].bind(this)(data))
+    })[data.type] || (() => {})).bind(this)(data))
 
     worker.addEventListener('error', error => this.sendErrorMessage(error))
 
@@ -180,14 +179,14 @@ export class MessageSystem extends EventTarget {
     })
   }
 
-  sendDefineMessage(path) {
-    if (!this._permissions.includes(PERMISSIONS.SEND_DEFINE)) {
-      throw new PermissionError('No permission SEND_DEFINE')
+  sendRegisterMessage(path) {
+    if (!this._permissions.includes(PERMISSIONS.SEND_REGISTER)) {
+      throw new PermissionError('No permission SEND_REGISTER')
     }
     return new Promise((resolve, reject) => {
       let message = {
         id: uuidV4()
-      , type: DEFINE
+      , type: REGISTER
       , path
       }
       this._aliveMessages[message.id] = { resolve, reject }
@@ -264,3 +263,5 @@ export class MessageSystem extends EventTarget {
     })
   }
 }
+
+export default MessageSystem

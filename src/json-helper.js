@@ -29,7 +29,7 @@ function wrap(value) {
       let func = value.toString()
       if (value.name) {
         // case for class method
-        let startsWithPosition = func.startsWith('*') ? 1 : 0 // case for Generator
+        let startsWithPosition = func.startsWith('*') ? 1 : 0 // case for Generator class method
         if (func.startsWith(value.name, startsWithPosition)) {
           return {
             expression: `({ ${ func } })${ convertPathListToString([ value.name ]) }`

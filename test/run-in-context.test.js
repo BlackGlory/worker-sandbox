@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import runInContext from '../src/run-in-context'
 
 describe('runInContext', function() {
-  it('run', function() {
+  it('should run in context', function() {
     let result = runInContext('b(a)', {
       a: 12345
     , b(value) {
@@ -12,7 +12,7 @@ describe('runInContext', function() {
     expect(result).to.equal(12345)
   })
 
-  it('block', function() {
+  it('should blocked internal environment', function() {
     expect(runInContext('code')).to.be.undefined
     expect(runInContext(`
       let code = 12345
@@ -23,5 +23,9 @@ describe('runInContext', function() {
       let values = 12345
       values
     `)).to.equal(12345)
+  })
+
+  it('should throw TypeError when first argument isnt String', function() {
+    expect(() => runInContext(() => {}, {})).to.throw(TypeError)
   })
 })

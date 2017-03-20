@@ -5,15 +5,15 @@ import isFunction from 'lodash/isFunction'
 import { MessageSystem, PERMISSIONS } from './message-system'
 import SandboxWorker from 'worker-loader?inline&name=worker.js!./worker.js'
 import {
-  createProxyHub
+  createAsyncProxyHub
 , convertPathListToString
 , setPropertyByPath
 , deletePropertyByPath
 } from './proxy-helper'
 
 export class TimeoutError extends Error {
-  constructor(message) {
-    super(message)
+  constructor(...args) {
+    super(...args)
     this.name = 'TimeoutError'
   }
 }
@@ -37,22 +37,25 @@ export class Sandbox extends MessageSystem {
     , PERMISSIONS.SEND_CALL
     , PERMISSIONS.SEND_ACCESS
     , PERMISSIONS.SEND_REMOVE
-    , PERMISSIONS.SEND_DEFINE
+    , PERMISSIONS.SEND_REGISTER
     , PERMISSIONS.RECEIVE_CALL
     ])
 
     this._callable = callable
 
-    this.callable = createProxyHub(this._callable, {
-      set: async (target, path, value) => {
-        return await this.define(path, value)
+    this.callable = createAsyncProxyHub(this._callable, {
+      set: (target, path, value) => {
+        if (!isFunction(value)) {
+          throw new TypeError('value must be function')
+        }
+        return this.registerCall(path, value)
       }
     , deleteProperty: async (target, path) => {
-        return await this.cancel(path)
+        return await this.cancelCall(path)
       }
     })
 
-    this.context = createProxyHub(this._context, {
+    this.context = createAsyncProxyHub(this._context, {
       get: async (target, path) => {
         return await this.get(convertPathListToString(path))
       }
@@ -68,12 +71,12 @@ export class Sandbox extends MessageSystem {
     })
   }
 
-  async define(path, func) {
+  async registerCall(path, func) {
     setPropertyByPath(this._callable, path, func)
-    return await this.sendDefineMessage(path, func)
+    return await this.sendRegisterMessage(path, func)
   }
 
-  async cancel(path) {
+  async cancelCall(path) {
     deletePropertyByPath(this._callable, path)
     return await this.sendRemoveMessage(path)
   }
