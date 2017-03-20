@@ -1,6 +1,6 @@
 {
   "name": "worker-sandbox",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Javascript Web Workers Sandbox",
   "repository": "git@github.com:BlackGlory/worker-sandbox.git",
   "author": "BlackGlory <woshenmedoubuzhidao@blackglory.me>",

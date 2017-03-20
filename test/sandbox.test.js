@@ -165,13 +165,18 @@ describe('Sandbox', function() {
       , c(test) {
           return test
         }
+      , async d(test) {
+          return test
+        }
       })
       let a = await sandbox.get('a')
         , b = await sandbox.get('b')
         , c = await sandbox.get('c')
+        , d = await sandbox.get('d')
       expect(a).to.equal(12345)
       expect(b).to.equal(54321)
       expect(c(12345)).to.equal(12345)
+      expect(await d(54321)).to.equal(54321)
     })
 
     it('should remove property', async function() {

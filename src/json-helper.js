@@ -29,7 +29,15 @@ function wrap(value) {
       let func = value.toString()
       if (value.name) {
         // case for class method
-        let startsWithPosition = func.startsWith('*') ? 1 : 0 // case for Generator class method
+        console.log(func)
+        let startsWithPosition = 0
+        if (func.startsWith('*')) {
+          // case for Generator class method
+          startsWithPosition = '*'.length // 1
+        } else if (func.startsWith('async ')) {
+          // case for Async class method
+          startsWithPosition = 'async '.length // 6
+        }
         if (func.startsWith(value.name, startsWithPosition)) {
           return {
             expression: `({ ${ func } })${ convertPathListToString([ value.name ]) }`
