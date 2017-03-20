@@ -48,10 +48,10 @@ export class Sandbox extends MessageSystem {
         if (!isFunction(value)) {
           throw new TypeError('value must be function')
         }
-        return this.registerCall(path, value)
+        return this.registerCall(convertPathListToString(path), value)
       }
     , deleteProperty: async (target, path) => {
-        return await this.cancelCall(path)
+        return await this.cancelCall(convertPathListToString(path))
       }
     })
 
@@ -73,7 +73,7 @@ export class Sandbox extends MessageSystem {
 
   async registerCall(path, func) {
     setPropertyByPath(this._callable, path, func)
-    return await this.sendRegisterMessage(path, func)
+    return await this.sendRegisterMessage(path)
   }
 
   async cancelCall(path) {

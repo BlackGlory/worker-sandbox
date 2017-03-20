@@ -8,7 +8,10 @@ import {
 , setPropertyByPath
 , deletePropertyByPath
 } from './proxy-helper'
-import runInContext from './run-in-context'
+import {
+  runInContext
+, callInContext
+} from './run-in-context'
 
 const RESOLVED = 'resolved'
 const REJECTED = 'rejected'
@@ -110,7 +113,8 @@ export class MessageSystem extends EventTarget {
           if (!this._permissions.includes(PERMISSIONS.RECEIVE_CALL)) {
             throw new PermissionError('No permission RECEIVE_CALL')
           }
-          this.sendResolvedMessage(id, await getPropertyByPath(this._context, path)(...parse(args)))
+          let fn = await getPropertyByPath(this._context, path)
+          this.sendResolvedMessage(id, await callInContext(fn, parse(args), this._context))
         } catch(e) {
           this.sendRejectedMessage(id, e)
         }

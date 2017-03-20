@@ -23,29 +23,30 @@ function validateSymbol(obj) {
   return obj[SYMBOL_KEY] === SYMBOL_VALUE
 }
 
+export function createFunctionExpression(fn) {
+  let str = fn.toString()
+  if (fn.name) {
+    // case for class method
+    let startsWithPosition = 0
+    if (str.startsWith('*')) {
+      // case for Generator class method
+      startsWithPosition = '*'.length // 1
+    } else if (str.startsWith('async ')) {
+      // case for Async class method
+      startsWithPosition = 'async '.length // 6
+    }
+    if (str.startsWith(fn.name, startsWithPosition)) {
+      return `({ ${ str } })${ convertPathListToString([ fn.name ]) }`
+    }
+  }
+  return `(${ str })`
+}
+
 function wrap(value) {
   const SwitchTree = {
     Function(value) {
-      let func = value.toString()
-      if (value.name) {
-        // case for class method
-        console.log(func)
-        let startsWithPosition = 0
-        if (func.startsWith('*')) {
-          // case for Generator class method
-          startsWithPosition = '*'.length // 1
-        } else if (func.startsWith('async ')) {
-          // case for Async class method
-          startsWithPosition = 'async '.length // 6
-        }
-        if (func.startsWith(value.name, startsWithPosition)) {
-          return {
-            expression: `({ ${ func } })${ convertPathListToString([ value.name ]) }`
-          }
-        }
-      }
       return {
-        expression: `(${ func })`
+        expression: createFunctionExpression(value)
       }
     }
   , Error(value) {

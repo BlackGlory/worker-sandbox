@@ -61,23 +61,23 @@ describe('Sandbox', function() {
 
   describe('#registerCall, #cancelCall', function() {
     it('should register a callable function', async function() {
-      const a = 'Hello'
+      const x = 'HelloWorld'
       let sandbox = new Sandbox()
-      await sandbox.registerCall('sayHello', function() {
-        return a
+      await sandbox.registerCall('sayX', function() {
+        return x
       })
-      expect(await sandbox.eval('sayHello()')).to.equal(a)
+      expect(await sandbox.eval('sayX()')).to.equal(x)
     })
 
     it('should cancel a callable function', async function() {
-      const a = 'Hello'
+      const a = 'GoodbyeWorld'
       let sandbox = new Sandbox()
-      await sandbox.registerCall('sayHello', function() {
+      await sandbox.registerCall('sayGoodbyeWorld', function() {
         return a
       })
-      await sandbox.cancelCall('sayHello')
+      await sandbox.cancelCall('sayGoodbyeWorld')
       try {
-        await sandbox.eval('sayHello()')
+        await sandbox.eval('sayGoodbyeWorld()')
         expect(false).to.be.true
       } catch(e) {
         expect(e instanceof ReferenceError).to.be.true
@@ -85,8 +85,8 @@ describe('Sandbox', function() {
     })
   })
 
-  describe('#context', function() {
-    it('should accesible', async function() {
+  describe('#context, #callable', function() {
+    it('should context accesible', async function() {
       let sandbox = new Sandbox()
       await sandbox.assign({
         a: 12345
@@ -107,10 +107,8 @@ describe('Sandbox', function() {
       expect((await sandbox.context.c.b)()).to.equal(12345)
       expect(await sandbox.context.c.b()).to.equal(12345)
     })
-  })
 
-  describe('#callable', function() {
-    it('should get, set, delete', async function() {
+    it('should callable get, set, delete', async function() {
       let sandbox = new Sandbox()
       try {
         sandbox.callable.num = 12345
@@ -122,6 +120,18 @@ describe('Sandbox', function() {
       expect(await sandbox.callable.fn()).to.equal(12345)
       delete sandbox.callable.fn
       expect(await sandbox.callable.fn).to.be.undefined
+    })
+
+    it('should context call callable', async function() {
+      // BUG
+      let sandbox = new Sandbox()
+      sandbox.callable.sayMorning = function() {
+        return 'Morning'
+      }
+      sandbox.context.say = function() {
+        return sayMorning()
+      }
+      expect(await sandbox.eval('say()')).to.equal('Morning')
     })
   })
 
