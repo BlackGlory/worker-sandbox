@@ -29,9 +29,8 @@ function timeoutReject(timeout, message = 'timeout') {
 export class Sandbox extends MessageSystem {
   constructor() {
     let worker = new SandboxWorker()
-      , callable = {}
 
-    super(worker, callable, [
+    super(worker, {}, [
       PERMISSIONS.SEND_ASSIGN
     , PERMISSIONS.SEND_EVAL
     , PERMISSIONS.SEND_CALL
@@ -41,9 +40,7 @@ export class Sandbox extends MessageSystem {
     , PERMISSIONS.RECEIVE_CALL
     ])
 
-    this._callable = callable
-
-    this.callable = createAsyncProxyHub(this._callable, {
+    this.callable = createAsyncProxyHub(this._context, {
       set: (target, path, value) => {
         if (!isFunction(value)) {
           throw new TypeError('value must be function')
@@ -55,29 +52,29 @@ export class Sandbox extends MessageSystem {
       }
     })
 
-    this.context = createAsyncProxyHub(this._context, {
-      get: async (target, path) => {
+    this.context = createAsyncProxyHub({}, {
+      get: async (_, path) => {
         return await this.get(convertPathListToString(path))
       }
-    , apply: async (target, path, caller, args) => {
+    , apply: async (_, path, caller, args) => {
         return await this.call(convertPathListToString(path), ...args)
       }
-    , set: async (target, path, value) => {
+    , set: async (_, path, value) => {
         return await this.set(convertPathListToString(path), value)
       }
-    , deleteProperty: async (target, path) => {
+    , deleteProperty: async (_, path) => {
         return await this.remove(convertPathListToString(path))
       }
     })
   }
 
   async registerCall(path, func) {
-    setPropertyByPath(this._callable, path, func)
+    setPropertyByPath(this._context, path, func)
     return await this.sendRegisterMessage(path)
   }
 
   async cancelCall(path) {
-    deletePropertyByPath(this._callable, path)
+    deletePropertyByPath(this._context, path)
     return await this.sendRemoveMessage(path)
   }
 

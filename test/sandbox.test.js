@@ -1,3 +1,5 @@
+'use strict'
+
 import { expect } from 'chai'
 import { Sandbox, TimeoutError } from '../src/sandbox'
 
@@ -128,10 +130,10 @@ describe('Sandbox', function() {
       sandbox.callable.sayMorning = function() {
         return 'Morning'
       }
-      sandbox.context.say = function() {
+      sandbox.context.wantSayMorning = function() {
         return sayMorning()
       }
-      expect(await sandbox.eval('say()')).to.equal('Morning')
+      expect(await sandbox.eval('wantSayMorning()')).to.equal('Morning')
     })
   })
 

@@ -1,3 +1,5 @@
+'use strict'
+
 class CallableFunction extends Function {}
 
 export function convertPathListToString(list) {

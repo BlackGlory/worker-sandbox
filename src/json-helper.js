@@ -23,100 +23,152 @@ function validateSymbol(obj) {
   return obj[SYMBOL_KEY] === SYMBOL_VALUE
 }
 
-export function createFunctionExpression(fn) {
+function wrapDynamicScope(code) {
+  return `(context => (function() {
+    context = context || {}
+    let keys, values
+    keys = Array.from(new Set([
+      ...Object.keys({
+      // here
+        keys
+      , values
+      , context
+      // inside function unwrap
+      , data
+      , fn
+      , err
+      // outside function unwrap
+      , SYMBOL_KEY
+      , SYMBOL_VALUE
+      , markSymbol
+      , validateSymbol
+      , wrapDynamicScope
+      , createFunctionExpression
+      , init
+      , wrap
+      , unwrap
+      , replacer
+      , reviver
+      , stringify
+      , parse
+      })
+    , ...Object.keys(context)
+    ])).filter(x => ${ /^[_\$\w][\d\w\$_]*$/ }.test(x))
+    values = keys.map(x => context[x])
+    return (
+      new Function(
+        ...keys
+      , ${ JSON.stringify(`return eval(${ JSON.stringify(`(${ code })`) })(...arguments[arguments.length - 1])`) }
+      )
+    )(...values, arguments)
+  }))`
+}
+
+function createFunctionExpression(fn) {
   let str = fn.toString()
+  if (str.endsWith('{ [native code] }')) {
+    return null
+  }
   if (fn.name) {
     // case for class method
     let startsWithPosition = 0
-    if (str.startsWith('*')) {
-      // case for Generator class method
-      startsWithPosition = '*'.length // 1
-    } else if (str.startsWith('async ')) {
+    if (str.startsWith('async ', startsWithPosition)) {
       // case for Async class method
-      startsWithPosition = 'async '.length // 6
+      startsWithPosition += 'async '.length // 6
+    }
+    if (str.startsWith('*', startsWithPosition)) {
+      // case for Generator class method
+      startsWithPosition += '*'.length // 1
     }
     if (str.startsWith(fn.name, startsWithPosition)) {
-      return `({ ${ str } })${ convertPathListToString([ fn.name ]) }`
+      return wrapDynamicScope(`({ ${ str } })${ convertPathListToString([ fn.name ]) }`)
     }
   }
-  return `(${ str })`
+  return wrapDynamicScope(str)
 }
 
-function wrap(value) {
-  const SwitchTree = {
-    Function(value) {
+export default function init(context) {
+  function wrap(value) {
+    if (isFunction(value)) {
       return {
-        expression: createFunctionExpression(value)
+        type: 'Function'
+      , expression: createFunctionExpression(value)
       }
     }
-  , Error(value) {
+
+    if (isError(value)) {
       return {
-        name: value.name
+        type: 'Error'
+      , name: value.name
       , message: value.message
       , stack: value.stack
       }
     }
-  , RegExp(value) {
+
+    if (isRegExp(value)) {
       return {
-        expression: value.toString()
+        type: 'RegExp'
+      , expression: value.toString()
       }
     }
   }
-  for (let type of Object.keys(SwitchTree)) {
-    if ({
-      isFunction
-    , isError
-    , isRegExp
-    }[`is${ type }`](value)) {
-      return Object.assign({}, SwitchTree[type](value), { type })
-    }
-  }
-}
 
-function unwrap(data) {
-  const SwitchTree = {
-    Function({ expression }) {
-      try {
-        return eval(expression)
-      } catch(e) {
+  function unwrap(data) {
+    if (data.type === 'Function') {
+      if (data.expression) {
+        let fn = eval(data.expression)(context)
+        return fn
+      } else {
         return null
       }
     }
-  , Error({ name, message, stack }) {
-      let err = new (window[name] || Error)(message)
-      err.stack = stack
+
+    if (data.type === 'Error') {
+      let err = new (window[data.name] || Error)(data.message)
+      err.stack = data.stack
       return err
     }
-  , RegExp({ expression }) {
-      return eval(expression)
+
+    if (data.type === 'RegExp') {
+      return eval(data.expression)
+    }
+
+    return null
+  }
+
+  function replacer(_, value) {
+    let wrapped = wrap(value)
+    if (isPlainObject(wrapped)) {
+      return markSymbol(wrapped)
+    } else {
+      return value
     }
   }
-  return SwitchTree[data.type](data)
-}
 
-export function replacer(key, value) {
-  let wrapped = wrap(value)
-  if (isPlainObject(wrapped)) {
-    return markSymbol(wrapped)
-  } else {
-    return value
+  function reviver(_, value) {
+    if (value && validateSymbol(value)) {
+      return unwrap(value)
+    } else {
+      return value
+    }
   }
-}
 
-export function reviver(key, value) {
-  if (value && validateSymbol(value)) {
-    return unwrap(value)
-  } else {
-    return value
+  function stringify(value, space) {
+    return CircularJSON.stringify(value, replacer, space)
   }
-}
 
-export function stringify(value, space) {
-  return CircularJSON.stringify(value, replacer, space)
-}
+  function parse(text) {
+    if (isString(text)) {
+      return CircularJSON.parse(text, reviver)
+    }
+  }
 
-export function parse(text) {
-  if (isString(text)) {
-    return CircularJSON.parse(text, reviver)
+  return {
+    wrap
+  , unwrap
+  , replacer
+  , reviver
+  , stringify
+  , parse
   }
 }

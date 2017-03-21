@@ -1,3 +1,5 @@
+'use strict'
+
 import { expect } from 'chai'
 import { MessageSystem, PERMISSIONS, PermissionError } from '../src/message-system'
 import MockWorker from 'worker-loader?inline&fallback=false!./mock-worker.js'

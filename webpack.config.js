@@ -7,7 +7,7 @@ module.exports = {
     'sandbox': './src/sandbox.js'
   , 'sandbox.min': './src/sandbox.js'
   }
-, devtool: 'inline-source-map'
+//, devtool: 'inline-source-map'
 , output: {
     path: path.resolve(__dirname, 'dist')
   , filename: '[name].js'

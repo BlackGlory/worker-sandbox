@@ -2,16 +2,13 @@
 
 import uuidV4 from 'uuid/v4'
 import EventTarget from 'event-target-shim'
-import { stringify, parse } from './json-helper'
+import initJSONHelper from './json-helper'
 import {
   getPropertyByPath
 , setPropertyByPath
 , deletePropertyByPath
 } from './proxy-helper'
-import {
-  runInContext
-, callInContext
-} from './run-in-context'
+import runInContext from './run-in-context'
 
 const RESOLVED = 'resolved'
 const REJECTED = 'rejected'
@@ -49,17 +46,27 @@ export class MessageSystem extends EventTarget {
   constructor(worker, context = {}, permissions = []) {
     super()
 
+    const { stringify, parse } = initJSONHelper(context)
+
+    this.stringify = stringify
+    this.parse = parse
+
+    this._worker = worker
+    this._permissions = permissions
+    this._aliveMessages = {}
+    this._context = context
+
     worker.addEventListener('message', ({ data }) => (({
       [RESOLVED]({ id, result }) {
         if (result) {
-          this._aliveMessages[id].resolve(parse(result))
+          this._aliveMessages[id].resolve(this.parse(result))
         } else {
           this._aliveMessages[id].resolve(result)
         }
         delete this._aliveMessages[id]
       }
     , [REJECTED]({ id, error }) {
-        this._aliveMessages[id].reject(parse(error))
+        this._aliveMessages[id].reject(this.parse(error))
         delete this._aliveMessages[id]
       }
     , [ASSIGN]({ id, path, value }) {
@@ -67,7 +74,7 @@ export class MessageSystem extends EventTarget {
           if (!this._permissions.includes(PERMISSIONS.RECEIVE_ASSIGN)) {
             throw new PermissionError('No permission RECEIVE_ASSIGN')
           }
-          setPropertyByPath(this._context, path, parse(value))
+          setPropertyByPath(this._context, path, this.parse(value))
           this.sendResolvedMessage(id)
         } catch(e) {
           this.sendRejectedMessage(id, e)
@@ -78,7 +85,8 @@ export class MessageSystem extends EventTarget {
           if (!this._permissions.includes(PERMISSIONS.RECEIVE_REGISTER)) {
             throw new PermissionError('No permission RECEIVE_REGISTER')
           }
-          setPropertyByPath(this._context, path, (...args) => this.sendCallMessage(path, ...args))
+          let fn = (...args) => this.sendCallMessage(path, ...args)
+          setPropertyByPath(this._context, path, fn)
           this.sendResolvedMessage(id)
         } catch(e) {
           this.sendRejectedMessage(id, e)
@@ -106,7 +114,7 @@ export class MessageSystem extends EventTarget {
         }
       }
     , [ERROR]({ error }) {
-        this.dispatchError(parse(error))
+        this.dispatchError(this.parse(error))
       }
     , async [CALL]({ id, path, args }) {
         try {
@@ -114,7 +122,7 @@ export class MessageSystem extends EventTarget {
             throw new PermissionError('No permission RECEIVE_CALL')
           }
           let fn = await getPropertyByPath(this._context, path)
-          this.sendResolvedMessage(id, await callInContext(fn, parse(args), this._context))
+          this.sendResolvedMessage(id, await fn(...this.parse(args)))
         } catch(e) {
           this.sendRejectedMessage(id, e)
         }
@@ -132,11 +140,6 @@ export class MessageSystem extends EventTarget {
     })[data.type] || (() => {})).bind(this)(data))
 
     worker.addEventListener('error', error => this.sendErrorMessage(error))
-
-    this._worker = worker
-    this._permissions = permissions
-    this._aliveMessages = {}
-    this._context = context
   }
 
   dispatchError(error) {
@@ -156,7 +159,7 @@ export class MessageSystem extends EventTarget {
     this.postMessage({
       id
     , type: RESOLVED
-    , result: stringify(result)
+    , result: this.stringify(result)
     })
   }
 
@@ -164,7 +167,7 @@ export class MessageSystem extends EventTarget {
     this.postMessage({
       id
     , type: REJECTED
-    , error: stringify(error)
+    , error: this.stringify(error)
     })
   }
 
@@ -207,7 +210,7 @@ export class MessageSystem extends EventTarget {
         id: uuidV4()
       , type: ASSIGN
       , path
-      , value: stringify(value)
+      , value: this.stringify(value)
       }
       this._aliveMessages[message.id] = { resolve, reject }
       this.postMessage(message)
@@ -253,7 +256,7 @@ export class MessageSystem extends EventTarget {
         id: uuidV4()
       , type: CALL
       , path
-      , args: stringify(args)
+      , args: this.stringify(args)
       }
       this._aliveMessages[message.id] = { resolve, reject }
       this.postMessage(message)
@@ -263,7 +266,7 @@ export class MessageSystem extends EventTarget {
   sendErrorMessage(error) {
     this.postMessage({
       type: ERROR
-    , error: stringify(error)
+    , error: this.stringify(error)
     })
   }
 }

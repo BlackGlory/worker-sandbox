@@ -1,8 +1,7 @@
+'use strict'
+
 import { expect } from 'chai'
-import {
-  runInContext
-, callInContext
-} from '../src/run-in-context'
+import runInContext from '../src/run-in-context'
 
 describe('runInContext', function() {
   it('should run in context', function() {
@@ -30,9 +29,5 @@ describe('runInContext', function() {
 
   it('should throw TypeError when first argument isnt String', function() {
     expect(() => runInContext(() => {}, {})).to.throw(TypeError)
-  })
-
-  it('should throw TypeError when first argument istn Function', function() {
-    expect(() => callInContext('')).to.throw(TypeError)
   })
 })

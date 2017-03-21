@@ -1,11 +1,23 @@
+'use strict'
+
 import { expect } from 'chai'
-import { stringify, parse, replacer, reviver } from '../src/json-helper'
+import initJSONHelper from '../src/json-helper'
 import _ from 'lodash'
+
+let { wrap, unwrap, stringify, parse, replacer, reviver } = initJSONHelper({})
 
 describe('JSON', function() {
   describe('stringify & parse', function() {
     it('should return undefined when parse non-string', function() {
       expect(parse(12345)).to.be.undefined
+    })
+
+    it('should wrap unknown-type to null', function() {
+      expect(wrap(undefined), null)
+    })
+
+    it('should unwrap unknown-type to null', function() {
+      expect(unwrap({}), null)
     })
 
     it('should stringify & parse Function', function() {
