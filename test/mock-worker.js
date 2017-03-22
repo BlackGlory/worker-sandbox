@@ -54,8 +54,9 @@ async function testReceiveMessages() {
   await messenger.sendAssignMessage('assignTest', 54321)
   expect(await messenger.sendAccessMessage('assignTest')).to.equal(54321)
   await messenger.sendRemoveMessage('assignTest')
-  messenger.sendErrorMessage(new Error('just a joke'))
-  self.postMessage('ok')
+  setTimeout(() => {
+    throw new Error('just a joke')
+  }, 0)
 }
 
 self.addEventListener('message', ({ data }) => {

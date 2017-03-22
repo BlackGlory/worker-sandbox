@@ -1,5 +1,7 @@
 'use strict'
 
+import isFunction from 'lodash/isFunction'
+
 class CallableFunction extends Function {}
 
 export function convertPathListToString(list) {
@@ -12,7 +14,12 @@ export function createAsyncProxyHub(target, handler = {}) {
       return getPropertyByPath(target, convertPathListToString(path))
     }
   , apply(target, path, caller, args) {
-      return getPropertyByPath(target, convertPathListToString(path)).apply(caller, args)
+      let fn = getPropertyByPath(target, convertPathListToString(path))
+      if (isFunction(fn)) {
+        return fn.apply(caller, args)
+      } else {
+        throw new TypeError(`${ path[path.length - 1] } is not a function`)
+      }
     }
   , set(target, path, value) {
       return setPropertyByPath(target, convertPathListToString(path), value)

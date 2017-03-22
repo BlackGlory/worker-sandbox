@@ -103,15 +103,15 @@ export class Sandbox extends MessageSystem {
     return await this.sendCallMessage(path, ...args)
   }
 
-  async eval(code, timeout) {
+  async eval(code, destoryTimeout) {
     if (isFunction(code)) {
       code = `(${ code })()`
     }
-    if (timeout) {
+    if (destoryTimeout) {
       try {
         return await Promise.race([
           this.sendEvalMessage(code)
-        , timeoutReject(timeout)
+        , timeoutReject(destoryTimeout)
         ])
       } catch(e) {
         if (e instanceof TimeoutError) {
@@ -124,13 +124,21 @@ export class Sandbox extends MessageSystem {
     }
   }
 
-  async execute(code, timeout) {
-    await this.eval(code, timeout)
+  async execute(code, destoryTimeout) {
+    await this.eval(code, destoryTimeout)
+  }
+
+  get available() {
+    return !!this._worker
   }
 
   destory() {
-    this._worker.terminate()
-    this._worker = null
+    if (this._worker) {
+      this._worker.terminate()
+      this._worker = null
+      return true
+    }
+    return false
   }
 }
 

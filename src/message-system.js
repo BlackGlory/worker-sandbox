@@ -17,7 +17,6 @@ const ASSIGN = 'assign'
 const ACCESS = 'access'
 const EVAL = 'eval'
 const REMOVE = 'remove'
-const ERROR = 'error'
 const REGISTER = 'register'
 
 export const PERMISSIONS = {
@@ -46,6 +45,12 @@ export class MessageSystem extends EventTarget {
   constructor(worker, context = {}, permissions = []) {
     super()
 
+    /*
+    if (!['Worker', 'DedicatedWorkerGlobalScope'].includes(worker.constructor.name)) {
+      throw new TypeError('First argument of MessageSystem constructor must be Worker or DedicatedWorkerGlobalScope')
+    }
+    */
+
     const { stringify, parse } = initJSONHelper(context)
 
     this.stringify = stringify
@@ -55,6 +60,24 @@ export class MessageSystem extends EventTarget {
     this._permissions = permissions
     this._aliveMessages = {}
     this._context = context
+
+    if (this._worker.constructor.name === 'Worker') {
+      const errorHandler = evt => {
+        if (evt && evt.message) {
+          this.dispatchEvent(new CustomEvent('error', {
+            detail: new Error(evt.message)
+          }))
+        } else {
+          this.dispatchEvent(new CustomEvent('error', {
+            detail: new Error(`${ evt }`)
+          }))
+        }
+        evt.preventDefault()
+      }
+
+      worker.addEventListener('error', errorHandler)
+      worker.addEventListener('unhandledrejection', errorHandler) // The event has not been implemented by the browser
+    }
 
     worker.addEventListener('message', ({ data }) => (({
       [RESOLVED]({ id, result }) {
@@ -113,9 +136,6 @@ export class MessageSystem extends EventTarget {
           this.sendRejectedMessage(id, e)
         }
       }
-    , [ERROR]({ error }) {
-        this.dispatchError(this.parse(error))
-      }
     , async [CALL]({ id, path, args }) {
         try {
           if (!this._permissions.includes(PERMISSIONS.RECEIVE_CALL)) {
@@ -138,25 +158,17 @@ export class MessageSystem extends EventTarget {
         }
       }
     })[data.type] || (() => {})).bind(this)(data))
-
-    worker.addEventListener('error', error => this.sendErrorMessage(error))
   }
 
-  dispatchError(error) {
-    this.dispatchEvent(new CustomEvent('error', {
-      detail: error
-    }))
-  }
-
-  postMessage(...args) {
+  sendMessage(messageObject) {
     if (!this._worker) {
       throw new Error('No available Worker instance.')
     }
-    this._worker.postMessage(...args)
+    this._worker.postMessage(messageObject)
   }
 
   sendResolvedMessage(id, result) {
-    this.postMessage({
+    this.sendMessage({
       id
     , type: RESOLVED
     , result: this.stringify(result)
@@ -164,7 +176,7 @@ export class MessageSystem extends EventTarget {
   }
 
   sendRejectedMessage(id, error) {
-    this.postMessage({
+    this.sendMessage({
       id
     , type: REJECTED
     , error: this.stringify(error)
@@ -182,7 +194,7 @@ export class MessageSystem extends EventTarget {
       , code
       }
       this._aliveMessages[message.id] = { resolve, reject }
-      this.postMessage(message)
+      this.sendMessage(message)
     })
   }
 
@@ -197,7 +209,7 @@ export class MessageSystem extends EventTarget {
       , path
       }
       this._aliveMessages[message.id] = { resolve, reject }
-      this.postMessage(message)
+      this.sendMessage(message)
     })
   }
 
@@ -213,7 +225,7 @@ export class MessageSystem extends EventTarget {
       , value: this.stringify(value)
       }
       this._aliveMessages[message.id] = { resolve, reject }
-      this.postMessage(message)
+      this.sendMessage(message)
     })
   }
 
@@ -228,7 +240,7 @@ export class MessageSystem extends EventTarget {
       , path
       }
       this._aliveMessages[message.id] = { resolve, reject }
-      this.postMessage(message)
+      this.sendMessage(message)
     })
   }
 
@@ -243,7 +255,7 @@ export class MessageSystem extends EventTarget {
       , path
       }
       this._aliveMessages[message.id] = { resolve, reject }
-      this.postMessage(message)
+      this.sendMessage(message)
     })
   }
 
@@ -259,14 +271,7 @@ export class MessageSystem extends EventTarget {
       , args: this.stringify(args)
       }
       this._aliveMessages[message.id] = { resolve, reject }
-      this.postMessage(message)
-    })
-  }
-
-  sendErrorMessage(error) {
-    this.postMessage({
-      type: ERROR
-    , error: this.stringify(error)
+      this.sendMessage(message)
     })
   }
 }

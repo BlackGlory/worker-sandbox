@@ -4,10 +4,15 @@ import { expect } from 'chai'
 import { MessageSystem, PERMISSIONS, PermissionError } from '../src/message-system'
 import MockWorker from 'worker-loader?inline&fallback=false!./mock-worker.js'
 
-describe('MessageSystem', function() {
+describe('Message System', function() {
+  it('should not check first argument type of constructor', function() {
+    new MessageSystem(self)
+  })
+
   describe('PermissionsError', function() {
     it('should throw PermissionsError when send message', function() {
-      let messenger = new MessageSystem(self)
+      let worker = new MockWorker()
+        , messenger = new MessageSystem(worker)
       expect(() => messenger.sendCallMessage()).to.throw(PermissionError)
       expect(() => messenger.sendRemoveMessage()).to.throw(PermissionError)
       expect(() => messenger.sendAccessMessage()).to.throw(PermissionError)
@@ -53,11 +58,10 @@ describe('MessageSystem', function() {
           , PERMISSIONS.RECEIVE_ASSIGN
           , PERMISSIONS.SEND_CALL
           ])
-      worker.addEventListener('message', async ({ data }) => {
-        if (data === 'ok') {
-          expect(await context.sayGoodbye()).to.equal('Goodbye')
-          done()
-        }
+      messenger.addEventListener('error', async ({ detail: err }) => {
+        expect(err.message).to.equal('Uncaught Error: just a joke')
+        expect(await context.sayGoodbye()).to.equal('Goodbye')
+        done()
       })
       worker.postMessage('ReceiveMessagesTest')
     })
@@ -65,12 +69,15 @@ describe('MessageSystem', function() {
 
   describe('EventTarget', function() {
     it('should trigger event', function(done) {
-      let messenger = new MessageSystem(self)
-      messenger.addEventListener('error', function({ detail }) {
-        expect(detail.message).to.equal('just a joke')
+      let worker = new MockWorker()
+        , messenger = new MessageSystem(worker)
+      messenger.addEventListener('commit', function({ detail }) {
+        expect(detail).to.equal('just a joke')
         done()
       })
-      messenger.dispatchError(new Error('just a joke'))
+      messenger.dispatchEvent(new CustomEvent('commit', {
+        detail: 'just a joke'
+      }))
     })
   })
 })

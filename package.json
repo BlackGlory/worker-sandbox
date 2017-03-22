@@ -1,6 +1,6 @@
 {
   "name": "worker-sandbox",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Javascript Web Workers Sandbox",
   "repository": "git@github.com:BlackGlory/worker-sandbox.git",
   "author": "BlackGlory <woshenmedoubuzhidao@blackglory.me>",
@@ -11,8 +11,8 @@
     "precommit": "yarn test",
     "prepush": "yarn test",
     "build": "cross-env NODE_ENV=production webpack",
-    "dev": "cross-env NODE_ENV=test karma start",
-    "test": "cross-env NODE_ENV=test karma start --single-run",
+    "dev": "cross-env NODE_ENV=test karma start --",
+    "test": "cross-env NODE_ENV=test karma start --single-run --",
     "analyzer": "cross-env NODE_ENV=production webpack --json | webpack-bundle-size-analyzer"
   },
   "devDependencies": {

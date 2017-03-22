@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import runInContext from '../src/run-in-context'
 
-describe('runInContext', function() {
+describe('Run In Context', function() {
   it('should run in context', function() {
     let result = runInContext('b(a)', {
       a: 12345

@@ -32,6 +32,12 @@ describe('Proxy', function() {
       expect(await pp.num).to.equal(12345)
       delete pp.num
       expect(await pp.num).to.equal(undefined)
+      try {
+        await pp.obj()
+        expect(false).to.be.true
+      } catch(e) {
+        expect(e instanceof TypeError).to.be.true
+      }
     })
 
     it('should throw Error when get handler throw Error', async function() {

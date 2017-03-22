@@ -39,26 +39,6 @@ describe('Sandbox', function() {
       let result = await sandbox.eval('a')
       expect(result).to.equal('hello world')
     })
-
-    it('should throw a TimeoutError', async function() {
-      let sandbox = new Sandbox()
-      try {
-        await sandbox.eval('new Promise(resolve => setTimeout(resolve, 10000))', 1000)
-        expect(false).to.be.true
-      } catch(e) {
-        expect(e instanceof TimeoutError).to.be.true
-      }
-    })
-
-    it('should throw a SyntaxError', async function() {
-      let sandbox = new Sandbox()
-      try {
-        await sandbox.eval('*****', 1000)
-        expect(false).to.be.true
-      } catch(e) {
-        expect(e instanceof SyntaxError).to.be.true
-      }
-    })
   })
 
   describe('#registerCall, #cancelCall', function() {
@@ -214,28 +194,19 @@ describe('Sandbox', function() {
   describe('#destory', function() {
     it('should destory worker', async function() {
       let sandbox = new Sandbox()
-      sandbox.destory()
+      expect(sandbox.destory()).to.equal(true)
       expect(sandbox._worker).to.be.null
-    })
-
-    it('should throw an Error after worker destoried', async function() {
-      let sandbox = new Sandbox()
-      sandbox.destory()
-      try {
-        await sandbox.eval('12345')
-        expect(false).to.be.true
-      } catch(e) {
-        expect(e.message).to.equal('No available Worker instance.')
-      }
+      expect(sandbox.destory()).to.equal(false)
     })
   })
 
   describe('#addEventListener, #removeEventListener, #dispatchEvent', function() {
-    it('should trigger error event', function() {
+    it('should trigger error event', function(done) {
       let sandbox = new Sandbox()
       sandbox.addEventListener('error', function({ detail }) {
         expect(detail instanceof Error).to.be.true
         expect(detail.message).to.equal('too young to die')
+        done()
       })
       sandbox.dispatchEvent(new CustomEvent('error', {
         detail: new Error('too young to die')
