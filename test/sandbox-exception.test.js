@@ -68,6 +68,22 @@ describe('Sandbox Execption', function() {
     expect(await sandbox.get('a')).to.equal(54321)
   })
 
+  it('should assign to context by call', async function() {
+    let sandbox = new Sandbox()
+    await sandbox.set('a', 12345)
+    expect(await sandbox.get('a')).to.equal(12345)
+    await sandbox.set('b', function() {
+      a = 54321
+    })
+    await sandbox.call('b')
+    expect(await sandbox.get('a')).to.equal(54321)
+    await sandbox.set('c', function() {
+      a = 12345
+    })
+    await sandbox.eval('c()')
+    expect(await sandbox.get('a')).to.equal(12345)
+  })
+
   it('should undefined to be undefined', async function() {
     let sandbox = new Sandbox()
     await sandbox.set('a', undefined)

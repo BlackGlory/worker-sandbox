@@ -29,14 +29,19 @@ function validateSymbol(obj) {
 
 function wrapDynamicScope(code) {
   return `(context => (function() {
+    function isLegalName(name) {
+      return ${ /^[_\$\w][\d\w\$_]*$/ }.test(name)
+    }
+
     context = context || {}
-    let keys, values
+    let keys, values = []
     keys = Array.from(new Set([
       ...Object.keys({
       // here
         keys
       , values
       , context
+      , isLegalName
       // inside function unwrap
       , data
       , fn
@@ -56,15 +61,19 @@ function wrapDynamicScope(code) {
       , stringify
       , parse
       })
-    , ...Object.keys(context)
-    ])).filter(x => ${ /^[_\$\w][\d\w\$_]*$/ }.test(x))
-    values = keys.map(x => context[x])
+    ])).filter(isLegalName)
+    values.length = keys.length
+    values.fill()
     return (
       new Function(
         ...keys
-      , ${ JSON.stringify(`return eval(${ JSON.stringify(`(${ code })`) })(...arguments[arguments.length - 1])`) }
+      , ${ JSON.stringify(`
+        with(arguments[arguments.length - 2]) {
+          return eval(${ JSON.stringify(`(${ code })`) })(...arguments[arguments.length - 1])
+        }
+        `) }
       )
-    )(...values, arguments)
+    )(...values, context, arguments)
   }))`
 }
 
