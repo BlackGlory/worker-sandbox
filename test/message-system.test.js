@@ -57,6 +57,14 @@ describe('Message System', function() {
           , PERMISSIONS.RECEIVE_EVAL
           , PERMISSIONS.RECEIVE_ASSIGN
           , PERMISSIONS.SEND_CALL
+          ], [
+            PERMISSIONS.SEND_ASSIGN
+          , PERMISSIONS.SEND_EVAL
+          , PERMISSIONS.SEND_CALL
+          , PERMISSIONS.SEND_ACCESS
+          , PERMISSIONS.SEND_REMOVE
+          , PERMISSIONS.SEND_REGISTER
+          , PERMISSIONS.RECEIVE_CALL
           ])
       messenger.addEventListener('error', async ({ detail: err }) => {
         expect(err.message).to.equal('Uncaught Error: just a joke')

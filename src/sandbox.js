@@ -2,11 +2,11 @@
 
 import uuidV4 from 'uuid/v4'
 import isFunction from 'lodash/isFunction'
+import isArray from 'lodash/isArray'
 import { MessageSystem, PERMISSIONS } from './message-system'
 import SandboxWorker from 'worker-loader?inline&name=worker.js!./worker.js'
 import {
   createAsyncProxyHub
-, convertPathListToString
 , setPropertyByPath
 , deletePropertyByPath
 } from './proxy-helper'
@@ -38,6 +38,14 @@ export class Sandbox extends MessageSystem {
     , PERMISSIONS.SEND_REMOVE
     , PERMISSIONS.SEND_REGISTER
     , PERMISSIONS.RECEIVE_CALL
+    ], [
+      PERMISSIONS.RECEIVE_EVAL
+    , PERMISSIONS.RECEIVE_CALL
+    , PERMISSIONS.RECEIVE_ASSIGN
+    , PERMISSIONS.RECEIVE_ACCESS
+    , PERMISSIONS.RECEIVE_REMOVE
+    , PERMISSIONS.RECEIVE_REGISTER
+    , PERMISSIONS.SEND_CALL
     ])
 
     this.callable = createAsyncProxyHub(this._context, {
@@ -45,25 +53,25 @@ export class Sandbox extends MessageSystem {
         if (!isFunction(value)) {
           throw new TypeError('value must be function')
         }
-        return this.registerCall(convertPathListToString(path), value)
+        return this.registerCall(path, value)
       }
     , deleteProperty: async (target, path) => {
-        return await this.cancelCall(convertPathListToString(path))
+        return await this.cancelCall(path)
       }
     })
 
     this.context = createAsyncProxyHub({}, {
       get: async (_, path) => {
-        return await this.get(convertPathListToString(path))
+        return await this.get(path)
       }
     , apply: async (_, path, caller, args) => {
-        return await this.call(convertPathListToString(path), ...args)
+        return await this.call(path, ...args)
       }
     , set: async (_, path, value) => {
-        return await this.set(convertPathListToString(path), value)
+        return await this.set(path, value)
       }
     , deleteProperty: async (_, path) => {
-        return await this.remove(convertPathListToString(path))
+        return await this.remove(path)
       }
     })
   }
@@ -103,19 +111,19 @@ export class Sandbox extends MessageSystem {
     return await this.sendCallMessage(path, ...args)
   }
 
-  async eval(code, destoryTimeout) {
+  async eval(code, destroyTimeout) {
     if (isFunction(code)) {
       code = `(${ code })()`
     }
-    if (destoryTimeout) {
+    if (destroyTimeout) {
       try {
         return await Promise.race([
           this.sendEvalMessage(code)
-        , timeoutReject(destoryTimeout)
+        , timeoutReject(destroyTimeout)
         ])
       } catch(e) {
         if (e instanceof TimeoutError) {
-          this.destory()
+          this.destroy()
         }
         throw e
       }
@@ -124,15 +132,15 @@ export class Sandbox extends MessageSystem {
     }
   }
 
-  async execute(code, destoryTimeout) {
-    await this.eval(code, destoryTimeout)
+  async execute(code, destroyTimeout) {
+    await this.eval(code, destroyTimeout)
   }
 
   get available() {
     return !!this._worker
   }
 
-  destory() {
+  destroy() {
     if (this._worker) {
       this._worker.terminate()
       this._worker = null

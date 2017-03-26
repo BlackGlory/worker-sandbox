@@ -191,12 +191,12 @@ describe('Sandbox', function() {
     })
   })
 
-  describe('#destory', function() {
-    it('should destory worker', async function() {
+  describe('#destroy', function() {
+    it('should destroy worker', async function() {
       let sandbox = new Sandbox()
-      expect(sandbox.destory()).to.equal(true)
+      expect(sandbox.destroy()).to.equal(true)
       expect(sandbox._worker).to.be.null
-      expect(sandbox.destory()).to.equal(false)
+      expect(sandbox.destroy()).to.equal(false)
     })
   })
 

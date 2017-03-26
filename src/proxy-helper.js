@@ -1,6 +1,7 @@
 'use strict'
 
 import isFunction from 'lodash/isFunction'
+import isString from 'lodash/isString'
 
 class CallableFunction extends Function {}
 
@@ -11,10 +12,10 @@ export function convertPathListToString(list) {
 export function createAsyncProxyHub(target, handler = {}) {
   const defaultHandler = {
     get(target, path) {
-      return getPropertyByPath(target, convertPathListToString(path))
+      return getPropertyByPath(target, path)
     }
   , apply(target, path, caller, args) {
-      let fn = getPropertyByPath(target, convertPathListToString(path))
+      let fn = getPropertyByPath(target, path)
       if (isFunction(fn)) {
         return fn.apply(caller, args)
       } else {
@@ -22,10 +23,10 @@ export function createAsyncProxyHub(target, handler = {}) {
       }
     }
   , set(target, path, value) {
-      return setPropertyByPath(target, convertPathListToString(path), value)
+      return setPropertyByPath(target, path, value)
     }
   , deleteProperty(target, path) {
-      return deletePropertyByPath(target, convertPathListToString(path))
+      return deletePropertyByPath(target, path)
     }
   }
 
@@ -60,7 +61,54 @@ export function createAsyncProxyHub(target, handler = {}) {
   return wrapper()
 }
 
-export function getPropertyByPath(obj, path) {
+export function getPropertyByPath(obj, path = []) {
+  if (isString(path)) {
+    return getPropertyByPathString(obj, path)
+  }
+  let temp = obj
+  for (let i = 0, len = path.length; i < len; ++i) {
+    temp = temp[path[i]]
+  }
+  return temp
+}
+
+export function setPropertyByPath(obj, path = [], value) {
+  if (isString(path)) {
+    return setPropertyByPathString(obj, path, value)
+  }
+  if (path.length === 0) {
+    throw new Error('Cannot assign target object itself')
+  }
+  let temp = obj
+  for (let i = 0, len = path.length; i < len; ++i) {
+    if (i === len - 1) {
+      temp[path[i]] = value
+    } else {
+      temp = temp[path[i]]
+    }
+  }
+  return true
+}
+
+export function deletePropertyByPath(obj, path = []) {
+  if (isString(path)) {
+    return deletePropertyByPathString(obj, path)
+  }
+  if (path.length === 0) {
+    throw new Error('Cannot remove target object itself')
+  }
+  let temp = obj
+  for (let i = 0, len = path.length; i < len; ++i) {
+    if (i === len - 1) {
+      delete temp[path[i]]
+    } else {
+      temp = temp[path[i]]
+    }
+  }
+  return true
+}
+
+export function getPropertyByPathString(obj, path) {
   if (!path) {
     return obj
   }
@@ -71,7 +119,7 @@ export function getPropertyByPath(obj, path) {
   }
 }
 
-export function setPropertyByPath(obj, path, value) {
+export function setPropertyByPathString(obj, path, value) {
   if (!path) {
     throw new Error('Cannot assign target object itself')
   }
@@ -87,7 +135,7 @@ export function setPropertyByPath(obj, path, value) {
   }
 }
 
-export function deletePropertyByPath(obj, path) {
+export function deletePropertyByPathString(obj, path) {
   if (!path) {
     throw new Error('Cannot remove target object itself')
   }

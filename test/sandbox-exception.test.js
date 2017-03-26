@@ -7,7 +7,7 @@ import initJSONHelper from '../src/json-helper'
 const { stringify } = initJSONHelper({})
 
 describe('Sandbox Execption', function() {
-  it('should throw a TimeoutError and worker destoryed', async function() {
+  it('should throw a TimeoutError and worker destroyed', async function() {
     let sandbox = new Sandbox()
     try {
       await sandbox.eval('new Promise(resolve => setTimeout(resolve, 10000))', 1000)
@@ -42,7 +42,7 @@ describe('Sandbox Execption', function() {
 
   it('should throw an Error after worker destoried', async function() {
     let sandbox = new Sandbox()
-    expect(sandbox.destory()).to.be.true
+    expect(sandbox.destroy()).to.be.true
     expect(sandbox.available).to.be.false
     try {
       await sandbox.eval('12345')
@@ -59,6 +59,28 @@ describe('Sandbox Execption', function() {
       done()
     })
     sandbox.eval('setTimeout(() => { throw new Error("a unhandled error") }, 0)')
+  })
+
+  it('should assign to context by eval', async function() {
+    let sandbox = new Sandbox()
+    await sandbox.set('a', 12345)
+    await sandbox.eval('a = 54321')
+    expect(await sandbox.get('a')).to.equal(54321)
+  })
+
+  it('should undefined to be undefined', async function() {
+    let sandbox = new Sandbox()
+    await sandbox.set('a', undefined)
+    expect(await sandbox.eval('a')).to.be.undefined
+  })
+
+  it('should allows declaration of variables', async function() {
+    let sandbox = new Sandbox()
+    await sandbox.set('a', 12345)
+    expect(await sandbox.eval(`
+      let a = 54321
+      a
+    `)).to.equal(54321)
   })
 
   // TODO: not now

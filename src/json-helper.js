@@ -13,6 +13,10 @@ import { convertPathListToString } from './proxy-helper'
 const SYMBOL_KEY = hash.sha1(project)
 const SYMBOL_VALUE = hash.MD5(project)
 
+const TYPE_FUNCTION = 'type_function'
+const TYPE_ERROR = 'type_error'
+const TYPE_REGEXP = 'type_regexp'
+
 function markSymbol(obj) {
   return Object.assign({}, obj, {
     [SYMBOL_KEY]: SYMBOL_VALUE
@@ -66,7 +70,7 @@ function wrapDynamicScope(code) {
 
 function createFunctionExpression(fn) {
   let str = fn.toString()
-  if (str.endsWith('{ [native code] }')) {
+  if (/{\s+\[native code\]\s+}$/.test(str)) {
     return null
   }
   if (fn.name) {
@@ -91,14 +95,14 @@ export default function init(context) {
   function wrap(value) {
     if (isFunction(value)) {
       return {
-        type: 'Function'
+        type: TYPE_FUNCTION
       , expression: createFunctionExpression(value)
       }
     }
 
     if (isError(value)) {
       return {
-        type: 'Error'
+        type: TYPE_ERROR
       , name: value.name
       , message: value.message
       , stack: value.stack
@@ -107,14 +111,14 @@ export default function init(context) {
 
     if (isRegExp(value)) {
       return {
-        type: 'RegExp'
+        type: TYPE_REGEXP
       , expression: value.toString()
       }
     }
   }
 
   function unwrap(data) {
-    if (data.type === 'Function') {
+    if (data.type === TYPE_FUNCTION) {
       if (data.expression) {
         let fn = eval(data.expression)(context)
         return fn
@@ -123,13 +127,13 @@ export default function init(context) {
       }
     }
 
-    if (data.type === 'Error') {
+    if (data.type === TYPE_ERROR) {
       let err = new (window[data.name] || Error)(data.message)
       err.stack = data.stack
       return err
     }
 
-    if (data.type === 'RegExp') {
+    if (data.type === TYPE_REGEXP) {
       return eval(data.expression)
     }
 
@@ -146,7 +150,7 @@ export default function init(context) {
   }
 
   function reviver(_, value) {
-    if (value && validateSymbol(value)) {
+    if (isPlainObject(value) && validateSymbol(value)) {
       return unwrap(value)
     } else {
       return value

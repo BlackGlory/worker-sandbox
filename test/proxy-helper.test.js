@@ -3,6 +3,9 @@
 import { expect } from 'chai'
 import {
   createAsyncProxyHub
+, getPropertyByPathString
+, setPropertyByPathString
+, deletePropertyByPathString
 , getPropertyByPath
 , setPropertyByPath
 , deletePropertyByPath
@@ -21,6 +24,7 @@ describe('Proxy', function() {
             return test
           }
         }
+      , undef: true
       }
 
       let pp = createAsyncProxyHub(example)
@@ -38,6 +42,8 @@ describe('Proxy', function() {
       } catch(e) {
         expect(e instanceof TypeError).to.be.true
       }
+      pp.undef = undefined
+      expect(await pp.undef).to.be.undefined
     })
 
     it('should throw Error when get handler throw Error', async function() {
@@ -72,7 +78,7 @@ describe('Proxy', function() {
 
       let pp = createAsyncProxyHub(example, {
         async get(target, path) {
-          return getPropertyByPath(target, convertPathListToString(path))
+          return getPropertyByPathString(target, convertPathListToString(path))
         }
       })
 
@@ -102,7 +108,7 @@ describe('Proxy', function() {
 
       let pp = createAsyncProxyHub(example, {
         async apply(target, path, caller, args) {
-          return getPropertyByPath(target, convertPathListToString(path)).apply(caller, args)
+          return getPropertyByPathString(target, convertPathListToString(path)).apply(caller, args)
         }
       })
 
@@ -116,7 +122,7 @@ describe('Proxy', function() {
 
       let pp = createAsyncProxyHub(example, {
         async set(target, path, value) {
-          return setPropertyByPath(target, convertPathListToString(path), value)
+          return setPropertyByPathString(target, convertPathListToString(path), value)
         }
       })
 
@@ -132,7 +138,7 @@ describe('Proxy', function() {
 
       let pp = createAsyncProxyHub(example, {
         async deleteProperty(target, path) {
-          return deletePropertyByPath(target, convertPathListToString(path))
+          return deletePropertyByPathString(target, convertPathListToString(path))
         }
       })
 
@@ -145,6 +151,26 @@ describe('Proxy', function() {
 
 describe('PropertyByPath', function() {
   describe('getPropertyByPath', function() {
+    it('should get property by path string', function() {
+      let obj = {
+        a: {
+          b: 'b'
+        }
+      , 'a.b': 'a.b'
+      , 'a["b"]': 'a["b"]'
+      }
+      expect(getPropertyByPathString(obj, '')).to.deep.equal(obj)
+      expect(getPropertyByPathString(obj, 'a')).to.deep.equal(obj.a)
+      expect(getPropertyByPathString(obj, 'a.b')).to.equal(obj.a.b)
+      expect(getPropertyByPathString(obj, `["a.b"]`)).to.equal(obj['a.b'])
+      expect(getPropertyByPathString(obj, `['a.b']`)).to.equal(obj['a.b'])
+      expect(getPropertyByPathString(obj, '[`a.b`]')).to.equal(obj['a.b'])
+      expect(getPropertyByPathString(obj, `['a["b"]']`)).to.equal(obj['a["b"]'])
+      expect(function() {
+        getPropertyByPathString(obj, 'a.c.b')
+      }).to.throw(TypeError)
+    })
+
     it('should get property by path', function() {
       let obj = {
         a: {
@@ -153,40 +179,84 @@ describe('PropertyByPath', function() {
       , 'a.b': 'a.b'
       , 'a["b"]': 'a["b"]'
       }
-      expect(getPropertyByPath(obj, '')).to.deep.equal(obj)
-      expect(getPropertyByPath(obj, 'a')).to.deep.equal(obj.a)
-      expect(getPropertyByPath(obj, 'a.b')).to.equal(obj.a.b)
-      expect(getPropertyByPath(obj, `["a.b"]`)).to.equal(obj['a.b'])
-      expect(getPropertyByPath(obj, `['a.b']`)).to.equal(obj['a.b'])
-      expect(getPropertyByPath(obj, '[`a.b`]')).to.equal(obj['a.b'])
-      expect(getPropertyByPath(obj, `['a["b"]']`)).to.equal(obj['a["b"]'])
+      expect(getPropertyByPath(obj)).to.deep.equal(obj)
+      expect(getPropertyByPath(obj, ['a'])).to.deep.equal(obj.a)
+      expect(getPropertyByPath(obj, ['a', 'b'])).to.equal(obj.a.b)
+      expect(getPropertyByPath(obj, ['a.b'])).to.equal(obj['a.b'])
+      expect(getPropertyByPath(obj, ['a["b"]'])).to.equal(obj['a["b"]'])
       expect(function() {
-        getPropertyByPath(obj, 'a.c.b')
+        getPropertyByPath(obj, ['a', 'c', 'b'])
       }).to.throw(TypeError)
     })
   })
 
   describe('setPropertyByPath', function() {
+    it('should set property by path string', function() {
+      let obj = {}
+      expect(function() {
+        setPropertyByPathString(obj, '', {})
+      }).to.throw(Error)
+      setPropertyByPathString(obj, 'a', {})
+      setPropertyByPathString(obj, 'a.b', 'b')
+      setPropertyByPathString(obj, `["a.b"]`, 'a.b')
+      setPropertyByPathString(obj, `['a["b"]']`, 'a["b"]')
+      setPropertyByPathString(obj, 'undef', undefined)
+      expect(getPropertyByPathString(obj, 'a')).to.deep.equal({ b: 'b' })
+      expect(getPropertyByPathString(obj, 'a.b')).to.equal('b')
+      expect(getPropertyByPathString(obj, `["a.b"]`)).to.equal('a.b')
+      expect(getPropertyByPathString(obj, `['a["b"]']`)).to.equal(obj['a["b"]'])
+      expect(function() {
+        setPropertyByPathString(obj, 'a.c.b')
+      }).to.throw(TypeError)
+      expect(getPropertyByPathString(obj, 'undef')).to.be.undefined
+    })
+
     it('should set property by path', function() {
       let obj = {}
       expect(function() {
-        setPropertyByPath(obj, '', {})
+        setPropertyByPath(obj, [], {})
       }).to.throw(Error)
-      setPropertyByPath(obj, 'a', {})
-      setPropertyByPath(obj, 'a.b', 'b')
-      setPropertyByPath(obj, `["a.b"]`, 'a.b')
-      setPropertyByPath(obj, `['a["b"]']`, 'a["b"]')
-      expect(getPropertyByPath(obj, 'a')).to.deep.equal({ b: 'b' })
-      expect(getPropertyByPath(obj, 'a.b')).to.equal('b')
-      expect(getPropertyByPath(obj, `["a.b"]`)).to.equal('a.b')
-      expect(getPropertyByPath(obj, `['a["b"]']`)).to.equal(obj['a["b"]'])
+      setPropertyByPath(obj, ['a'], {})
+      setPropertyByPath(obj, ['a', 'b'], 'b')
+      setPropertyByPath(obj, ['a.b'], 'a.b')
+      setPropertyByPath(obj, ['a["b"]'], 'a["b"]')
+      setPropertyByPath(obj, ['undef'], undefined)
+      expect(getPropertyByPath(obj, ['a'])).to.deep.equal({ b: 'b' })
+      expect(getPropertyByPath(obj, ['a', 'b'])).to.equal('b')
+      expect(getPropertyByPath(obj, ["a.b"])).to.equal('a.b')
+      expect(getPropertyByPath(obj, ['a["b"]'])).to.equal(obj['a["b"]'])
       expect(function() {
-        setPropertyByPath(obj, 'a.c.b')
+        setPropertyByPath(obj, ['a', 'c', 'b'])
       }).to.throw(TypeError)
+      expect(getPropertyByPath(obj, ['undef'])).to.be.undefined
     })
   })
 
   describe('deletePropertyByPath', function() {
+    it('should delete property by path string', function() {
+      let obj = {
+        a: {
+          b: 'b'
+        }
+      , 'a.b': 'a.b'
+      , 'a["b"]': 'a["b"]'
+      }
+      expect(function() {
+        deletePropertyByPathString(obj, '')
+      }).to.throw(Error)
+      expect(function() {
+        deletePropertyByPathString(obj, 'a.c.b')
+      }).to.throw(TypeError)
+      deletePropertyByPathString(obj, 'a.b')
+      expect(obj.a).to.deep.equal({})
+      deletePropertyByPathString(obj, "['a']")
+      expect(obj.a).to.be.undefined
+      deletePropertyByPathString(obj, `['a.b']`)
+      expect(obj['a.b']).to.be.undefined
+      deletePropertyByPathString(obj, `['a["b"]']`)
+      expect(obj['a["b"]']).to.be.undefined
+    })
+
     it('should delete property by path', function() {
       let obj = {
         a: {
@@ -196,18 +266,18 @@ describe('PropertyByPath', function() {
       , 'a["b"]': 'a["b"]'
       }
       expect(function() {
-        deletePropertyByPath(obj, '')
+        deletePropertyByPath(obj)
       }).to.throw(Error)
       expect(function() {
-        deletePropertyByPath(obj, 'a.c.b')
+        deletePropertyByPath(obj, ['a', 'c', 'b'])
       }).to.throw(TypeError)
-      deletePropertyByPath(obj, 'a.b')
+      deletePropertyByPath(obj, ['a', 'b'])
       expect(obj.a).to.deep.equal({})
-      deletePropertyByPath(obj, "['a']")
+      deletePropertyByPath(obj, ['a'])
       expect(obj.a).to.be.undefined
-      deletePropertyByPath(obj, `['a.b']`)
+      deletePropertyByPath(obj, ['a.b'])
       expect(obj['a.b']).to.be.undefined
-      deletePropertyByPath(obj, `['a["b"]']`)
+      deletePropertyByPath(obj, ['a["b"]'])
       expect(obj['a["b"]']).to.be.undefined
     })
   })

@@ -15,7 +15,7 @@ module.exports = function(config) {
   , colors: true
   , logLevel: config.LOG_INFO
   , autoWatch: true
-  , browsers: ['Chrome']
+  , browsers: ['Chrome'/*, 'Firefox'*/]
   , singleRun: false
   , concurrency: Infinity
   , coverageReporter: {
