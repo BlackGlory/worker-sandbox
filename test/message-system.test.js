@@ -1,7 +1,12 @@
 'use strict'
 
 import { expect } from 'chai'
-import { MessageSystem, PERMISSIONS, PermissionError } from '../src/message-system'
+import {
+  MessageSystem
+, PERMISSIONS
+, PermissionError
+, RemotePermissionError
+} from '../src/message-system'
 import MockWorker from 'worker-loader?inline&fallback=false!./mock-worker.js'
 
 describe('Message System', function() {
@@ -10,6 +15,42 @@ describe('Message System', function() {
   })
 
   describe('PermissionsError', function() {
+    it('should throw RemotePermissionError when receive message', function(done) {
+      let worker = new MockWorker()
+        , messenger = new MessageSystem(worker, {}, [
+            PERMISSIONS.RECEIVE_EVAL
+          , PERMISSIONS.RECEIVE_CALL
+          , PERMISSIONS.RECEIVE_ASSIGN
+          , PERMISSIONS.RECEIVE_ACCESS
+          , PERMISSIONS.RECEIVE_REMOVE
+          , PERMISSIONS.RECEIVE_REGISTER
+          ], [])
+      worker.addEventListener('message', ({ data }) => {
+        if (data === 'ok') {
+          done()
+        }
+      })
+      worker.postMessage('RemotePermissionsTest')
+    })
+
+    it('should throw RemotePermissionError when send message', function() {
+      let worker = new MockWorker()
+        , messenger = new MessageSystem(worker, {}, [
+            PERMISSIONS.SEND_ASSIGN
+          , PERMISSIONS.SEND_EVAL
+          , PERMISSIONS.SEND_CALL
+          , PERMISSIONS.SEND_ACCESS
+          , PERMISSIONS.SEND_REMOVE
+          , PERMISSIONS.SEND_REGISTER
+          ], [])
+      expect(() => messenger.sendCallMessage()).to.throw(RemotePermissionError)
+      expect(() => messenger.sendRemoveMessage()).to.throw(RemotePermissionError)
+      expect(() => messenger.sendAccessMessage()).to.throw(RemotePermissionError)
+      expect(() => messenger.sendAssignMessage()).to.throw(RemotePermissionError)
+      expect(() => messenger.sendRegisterMessage()).to.throw(RemotePermissionError)
+      expect(() => messenger.sendEvalMessage()).to.throw(RemotePermissionError)
+    })
+
     it('should throw PermissionsError when send message', function() {
       let worker = new MockWorker()
         , messenger = new MessageSystem(worker)

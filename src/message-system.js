@@ -41,6 +41,13 @@ export class PermissionError extends Error {
   }
 }
 
+export class RemotePermissionError extends PermissionError {
+  constructor(...args) {
+    super(...args)
+    this.name = 'RemotePermissionError'
+  }
+}
+
 export class MessageSystem extends EventTarget {
   constructor(worker, context = {}, permissions = [], remotePermissions = []) {
     super()
@@ -93,7 +100,7 @@ export class MessageSystem extends EventTarget {
             throw new PermissionError('No permission RECEIVE_ASSIGN')
           }
           if (!this._remotePermissions.includes(PERMISSIONS.SEND_ASSIGN)) {
-            throw new PermissionError('No remote permission SEND_ASSIGN')
+            throw new RemotePermissionError('No remote permission SEND_ASSIGN')
           }
           setPropertyByPath(this._context, path, this.parse(value))
           this.sendResolvedMessage(id)
@@ -107,7 +114,7 @@ export class MessageSystem extends EventTarget {
             throw new PermissionError('No permission RECEIVE_REGISTER')
           }
           if (!this._remotePermissions.includes(PERMISSIONS.SEND_REGISTER)) {
-            throw new PermissionError('No remote permission SEND_REGISTER')
+            throw new RemotePermissionError('No remote permission SEND_REGISTER')
           }
           let fn = (...args) => this.sendCallMessage(path, ...args)
           setPropertyByPath(this._context, path, fn)
@@ -122,7 +129,7 @@ export class MessageSystem extends EventTarget {
             throw new PermissionError('No permission RECEIVE_ACCESS')
           }
           if (!this._remotePermissions.includes(PERMISSIONS.SEND_ACCESS)) {
-            throw new PermissionError('No remote permission SEND_ACCESS')
+            throw new RemotePermissionError('No remote permission SEND_ACCESS')
           }
           this.sendResolvedMessage(id, getPropertyByPath(this._context, path))
         } catch(e) {
@@ -135,7 +142,7 @@ export class MessageSystem extends EventTarget {
             throw new PermissionError('No permission RECEIVE_REMOVE')
           }
           if (!this._remotePermissions.includes(PERMISSIONS.SEND_REMOVE)) {
-            throw new PermissionError('No remote permission SEND_REMOVE')
+            throw new RemotePermissionError('No remote permission SEND_REMOVE')
           }
           deletePropertyByPath(this._context, path)
           this.sendResolvedMessage(id)
@@ -149,7 +156,7 @@ export class MessageSystem extends EventTarget {
             throw new PermissionError('No permission RECEIVE_CALL')
           }
           if (!this._remotePermissions.includes(PERMISSIONS.SEND_CALL)) {
-            throw new PermissionError('No remote permission SEND_CALL')
+            throw new RemotePermissionError('No remote permission SEND_CALL')
           }
           let fn = await getPropertyByPath(this._context, path)
           this.sendResolvedMessage(id, await fn(...this.parse(args)))
@@ -163,7 +170,7 @@ export class MessageSystem extends EventTarget {
             throw new PermissionError('No permission RECEIVE_EVAL')
           }
           if (!this._remotePermissions.includes(PERMISSIONS.SEND_EVAL)) {
-            throw new PermissionError('No remote permission SEND_EVAL')
+            throw new RemotePermissionError('No remote permission SEND_EVAL')
           }
           this.sendResolvedMessage(id, await runInContext(code, this._context))
         } catch(e) {
@@ -201,7 +208,7 @@ export class MessageSystem extends EventTarget {
       throw new PermissionError('No permission SEND_EVAL')
     }
     if (!this._remotePermissions.includes(PERMISSIONS.RECEIVE_EVAL)) {
-      throw new PermissionError('No remote permission RECEIVE_EVAL')
+      throw new RemotePermissionError('No remote permission RECEIVE_EVAL')
     }
     return new Promise((resolve, reject) => {
       let message = {
@@ -219,7 +226,7 @@ export class MessageSystem extends EventTarget {
       throw new PermissionError('No permission SEND_REGISTER')
     }
     if (!this._remotePermissions.includes(PERMISSIONS.RECEIVE_REGISTER)) {
-      throw new PermissionError('No remote permission RECEIVE_REGISTER')
+      throw new RemotePermissionError('No remote permission RECEIVE_REGISTER')
     }
     return new Promise((resolve, reject) => {
       let message = {
@@ -237,7 +244,7 @@ export class MessageSystem extends EventTarget {
       throw new PermissionError('No permission SEND_ASSIGN')
     }
     if (!this._remotePermissions.includes(PERMISSIONS.RECEIVE_ASSIGN)) {
-      throw new PermissionError('No remote permission RECEIVE_ASSIGN')
+      throw new RemotePermissionError('No remote permission RECEIVE_ASSIGN')
     }
     return new Promise((resolve, reject) => {
       let message = {
@@ -256,7 +263,7 @@ export class MessageSystem extends EventTarget {
       throw new PermissionError('No permission SEND_ACCESS')
     }
     if (!this._remotePermissions.includes(PERMISSIONS.RECEIVE_ACCESS)) {
-      throw new PermissionError('No remote permission RECEIVE_ACCESS')
+      throw new RemotePermissionError('No remote permission RECEIVE_ACCESS')
     }
     return new Promise((resolve, reject) => {
       let message = {
@@ -274,7 +281,7 @@ export class MessageSystem extends EventTarget {
       throw new PermissionError('No permission SEND_REMOVE')
     }
     if (!this._remotePermissions.includes(PERMISSIONS.RECEIVE_REMOVE)) {
-      throw new PermissionError('No remote permission RECEIVE_REMOVE')
+      throw new RemotePermissionError('No remote permission RECEIVE_REMOVE')
     }
     return new Promise((resolve, reject) => {
       let message = {
@@ -292,7 +299,7 @@ export class MessageSystem extends EventTarget {
       throw new PermissionError('No permission SEND_CALL')
     }
     if (!this._remotePermissions.includes(PERMISSIONS.RECEIVE_CALL)) {
-      throw new PermissionError('No remote permission RECEIVE_CALL')
+      throw new RemotePermissionError('No remote permission RECEIVE_CALL')
     }
     return new Promise((resolve, reject) => {
       let message = {

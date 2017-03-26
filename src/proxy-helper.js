@@ -72,7 +72,7 @@ export function getPropertyByPath(obj, path = []) {
   return temp
 }
 
-export function setPropertyByPath(obj, path = [], value) {
+export function setPropertyByPath(obj, path, value) {
   if (isString(path)) {
     return setPropertyByPathString(obj, path, value)
   }
