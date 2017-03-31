@@ -192,7 +192,7 @@ await sandbox.context.sayHelloWorld() === 'hello world' // true
 await sandbox.context['functions.sayHelloWorld']() === 'hello world' // true
 ```
 
-#### async Sandbox#get(path: Array<string>) : any
+#### async Sandbox#get(path: Array<string> | string) : any
 
 Get the value of a specific path in the sandbox context.
 
@@ -230,7 +230,7 @@ await sandbox.context.obj.hello === 'hello' // true
 await sandbox.context.obj['world'] === 'world' // true
 ```
 
-#### async Sandbox#remove(path: Array<string>) : void
+#### async Sandbox#remove(path: Array<string> | string) : void
 
 Remove the value of a specific path in the sandbox context.
 
@@ -271,7 +271,7 @@ delete sandbox.context.obj.world
 await sandbox.context.obj // {}
 ```
 
-#### async Sandbox#call(path: Array<string>, ...args: Array<any>) : any
+#### async Sandbox#call(path: Array<string> | string, ...args: Array<any>) : any
 
 Calling a function within a sandbox context within a specific path, the actual function runs in the sandbox.
 
@@ -330,7 +330,7 @@ delete sandbox.callable.sayHelloWorld
 await sandbox.eval('sayHelloWorld') // ReferenceError!
 ```
 
-#### async Sandbox#registerCall(path: Array<string>, func: Function) : void
+#### async Sandbox#registerCall(path: string | Array<string>, func: Function) : void
 
 Register a Callable function in the sandbox, which can be called in the sandbox, but the actual function is done outside the sandbox.
 
@@ -343,7 +343,7 @@ await sandbox.registerCall('sayHelloWorld', function(speaker) {
 await sandbox.eval('sayHelloWorld("Sandbox")') === 'Sandbox: hello world' // true
 ```
 
-#### async Sandbox#cancelCall(path: Array<string>) : void
+#### async Sandbox#cancelCall(path: string | Array<string>) : void
 
 Cancel registered Callable function.
 
@@ -397,12 +397,14 @@ The `await` operator can be omitted when you call `Sandbox#set`, `Sandbox#assign
 
 ```js
 let sandbox = new Sandbox()
-sandbox.set('hello', 'hello')
-sandbox.assign({
-  world: 'world'
-, removable: 'removable'
-})
-sandbox.remove('removable')
+for (let i = 1000; i--;) {
+  sandbox.set('hello', 'hello')
+  sandbox.assign({
+    world: 'world'
+  , removable: 'removable'
+  })
+  sandbox.remove('removable')
+}
 await sandbox.context.removable === undefined // true
 await sandbox.context.hello === 'hello' // true
 await sandbox.context.world === 'world' // true
