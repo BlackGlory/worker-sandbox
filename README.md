@@ -1,8 +1,4 @@
-# worker-sandbox
-[![npm](https://img.shields.io/npm/v/worker-sandbox.svg?maxAge=2592000)](https://www.npmjs.com/package/worker-sandbox)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/BlackGlory/worker-sandbox/master/LICENSE)
-[![Build Status](https://travis-ci.org/BlackGlory/worker-sandbox.svg?branch=master)](https://travis-ci.org/BlackGlory/worker-sandbox)
-[![Coverage Status](https://coveralls.io/repos/github/BlackGlory/worker-sandbox/badge.svg)](https://coveralls.io/github/BlackGlory/worker-sandbox)
+# worker-sandbox [![npm](https://img.shields.io/npm/v/worker-sandbox.svg?maxAge=2592000)](https://www.npmjs.com/package/worker-sandbox) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/BlackGlory/worker-sandbox/master/LICENSE) [![Build Status](https://travis-ci.org/BlackGlory/worker-sandbox.svg?branch=master)](https://travis-ci.org/BlackGlory/worker-sandbox) [![Coverage Status](https://coveralls.io/repos/github/BlackGlory/worker-sandbox/badge.svg)](https://coveralls.io/github/BlackGlory/worker-sandbox)
 
 Javascript Web Workers Sandbox.
 
