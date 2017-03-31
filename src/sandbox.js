@@ -49,14 +49,11 @@ export class Sandbox extends MessageSystem {
     ])
 
     this.callable = createAsyncProxyHub(this._context, {
-      set: (target, path, value) => {
-        if (!isFunction(value)) {
-          throw new TypeError('value must be function')
-        }
+      set: (_, path, value) => {
         return this.registerCall(path, value)
       }
-    , deleteProperty: async (target, path) => {
-        return await this.cancelCall(path)
+    , deleteProperty: (_, path) => {
+        return this.cancelCall(path)
       }
     })
 
@@ -67,23 +64,26 @@ export class Sandbox extends MessageSystem {
     , apply: async (_, path, caller, args) => {
         return await this.call(path, ...args)
       }
-    , set: async (_, path, value) => {
-        return await this.set(path, value)
+    , set: (_, path, value) => {
+        return this.set(path, value)
       }
-    , deleteProperty: async (_, path) => {
-        return await this.remove(path)
+    , deleteProperty: (_, path) => {
+        return this.remove(path)
       }
     })
   }
 
-  async registerCall(path, func) {
+  registerCall(path, func) {
+    if (!isFunction(func)) {
+      throw new TypeError('Only function can be registered')
+    }
     setPropertyByPath(this._context, path, func)
-    return await this.sendRegisterMessage(path)
+    return this.sendRegisterMessage(path)
   }
 
-  async cancelCall(path) {
+  cancelCall(path) {
     deletePropertyByPath(this._context, path)
-    return await this.sendRemoveMessage(path)
+    return this.sendRemoveMessage(path)
   }
 
   async set(path, value) {
@@ -93,7 +93,7 @@ export class Sandbox extends MessageSystem {
   async assign(obj) {
     await Promise.all(
       Object.keys(obj).map(path => {
-        this.set(path, obj[path])
+        this.set([path], obj[path])
       })
     )
   }

@@ -1,36 +1,36 @@
 # worker-sandbox
-Javascript Web Workers Sandbox.
+Javascript Web Workers 沙箱.
 
-[中文文档](https://github.com/BlackGlory/worker-sandbox/blob/master/README-Chinese.md)
+[English document](https://github.com/BlackGlory/worker-sandbox/blob/master/README.md)
 
-## Usage
+## 使用
 
-### Installation
+### 安装
 
 ```
 npm install --save worker-sandbox
 ```
 
-OR
+或
 
 ```
 yarn add worker-sandbox
 ```
 
-### Quickstart
+### 快速开始
 
-To build a runInContext function as an example:
+以构建一个 runInContext 函数为例:
 
 ```js
-import Sandbox from 'worker-sandbox' // Import module
+import Sandbox from 'worker-sandbox' // 导入模块
 
 async function runInContext(code, context) {
   try {
-    let sandbox = new Sandbox() // Create a sandbox instance
-    await sandbox.assign(context) // Assign the context of the sandbox
-    return await sandbox.eval(code) // Run the code
+    let sandbox = new Sandbox() // 创建沙箱实例
+    await sandbox.assign(context) // 对沙箱的上下文赋值
+    return await sandbox.eval(code) // 运行代码
   } finally {
-    sandbox.destroy() // Destroy the Web Worker instance in the sandbox
+    sandbox.destroy() // 销毁沙箱内的 Web Worker 实例
   }
 }
 
@@ -47,7 +47,7 @@ runInContext('sayHelloWorld()', {
 
 ### class Sandbox()
 
-Use the `new` operator to create a sandbox instance, and the Sandbox class constructor has no arguments.
+使用 `new` 运算符创建一个沙箱实例, Sandbox 类的构造函数没有参数.
 
 ```js
 let sandbox = new Sandbox()
@@ -56,7 +56,7 @@ sandbox instanceof Sandbox // true
 
 #### async Sandbox#eval(code: string | Function[, destroyTimeout: number]) : any
 
-Eval code in the sandbox. If the destroyTimeout parameter (milliseconds) is provided, a TimeoutError exception is returned when the execution code exceeds the specified time.
+在沙箱内执行代码, 如果提供 destroyTimeout 参数(单位为毫秒), 则当执行代码的时长超过特定值时, 会返回一个 TimeoutError 异常.
 
 ```js
 let sandbox = new Sandbox()
@@ -64,7 +64,7 @@ let sandbox = new Sandbox()
 result === 'hello world' // true
 ```
 
-Use destroyTime
+使用 destroyTime
 
 ```js
 let sandbox = new Sandbox()
@@ -77,7 +77,7 @@ try {
 
 #### async Sandbox#execute(code: string | Function[, destroyTimeout: number]) : void
 
-No return value version of `Sandbox#eval`.
+无返回值版本的 `Sandbox#eval`.
 
 ```js
 let sandbox = new Sandbox()
@@ -87,29 +87,29 @@ result === undefined // true
 
 #### Sandbox#context : { [string]: any }
 
-This is an asynchronous Proxy object that can be used as syntactic sugar for `Sandbox#set`, `Sandbox#get`, `Sandbox#remove`, `Sandbox#call`.
+这是一个异步 Proxy 对象, 可作为 `Sandbox#set`, `Sandbox#get`, `Sandbox#remove`, `Sandbox#call` 的语法糖使用.
 
 ```js
 let sandbox = new Sandbox()
 
-// Get the full context
+// 获取完整上下文
 await sandbox.context // {}
 
-// Set the value of a specific path
+// 设置特定路径的值
 sandbox.context.helloWorld = 'hello world'
 
-// Get the value of a specific path
+// 获取特定路径的值
 await sandbox.context.helloWorld === 'hello world' // true
 
-// Set a specific path as a function
+// 设置特定路径为函数
 sandbox.context.sayHelloWorld = function(speaker) {
   return `${ speaker }: ${ helloWorld }`
 }
 
-// Call a function of a specific path (the actual function runs in the sandbox)
+// 调用特定路径的函数(实际的函数运行在沙箱内完成)
 await sandbox.context.sayHelloWorld('Sandbox') === 'Sandbox: hello world'
 
-// Remove the value of a specific path
+// 移除特定路径的值
 delete sandbox.context.helloWorld
 delete sandbox.context.sayHelloWorld
 await sandbox.context.helloWorld === undefined // true
@@ -118,7 +118,7 @@ await sandbox.context.sayHelloWorld === undefined // true
 
 #### async Sandbox#set(path: Array<string> | string, value: any) : void
 
-Set the value of a specific path in the sandbox context.
+设置沙箱上下文内特定路径的值.
 
 ```js
 let sandbox = new Sandbox()
@@ -130,7 +130,7 @@ await sandbox.set(['arr[2]'], 'arr[2]')
 await sandbox.context['arr[2]'] === 'arr[2]' // true
 ```
 
-Equivalent to
+等价于
 
 ```js
 let sandbox = new Sandbox()
@@ -142,7 +142,7 @@ await sandbox.set(['arr[2]'], 'arr[2]')
 await sandbox.context['arr[2]'] === 'arr[2]' // true
 ```
 
-Equivalent to
+等价于
 
 ```js
 let sandbox = new Sandbox()
@@ -156,7 +156,7 @@ await sandbox.context['arr[2]'] === 'arr[2]' // true
 
 #### async Sandbox#assign(obj: { [string]: any }) : void
 
-It is the `Object.assign()` for `Sandbox#context`.
+相当于 `Sandbox#context` 的 `Object.assign`.
 
 ```js
 let sandbox = new Sandbox()
@@ -174,7 +174,7 @@ await sandbox.context.sayHelloWorld() === 'hello world' // true
 await sandbox.context['functions.sayHelloWorld']() === 'hello world' // true
 ```
 
-Equivalent to
+等价于
 
 ```js
 let sandbox = new Sandbox()
@@ -192,9 +192,9 @@ await sandbox.context.sayHelloWorld() === 'hello world' // true
 await sandbox.context['functions.sayHelloWorld']() === 'hello world' // true
 ```
 
-#### async Sandbox#get(path: Array<string>) : any
+#### async Sandbox#get(path: Array<string> | string) : any
 
-Get the value of a specific path in the sandbox context.
+获取沙箱上下文内特定路径的值.
 
 ```js
 let sandbox = new Sandbox()
@@ -206,7 +206,7 @@ await sandbox.get('obj.hello') === 'hello' // true
 await sandbox.get('obj["world"]') === 'world' // true
 ```
 
-Equivalent to
+等价于
 
 ```js
 let sandbox = new Sandbox()
@@ -218,7 +218,7 @@ await sandbox.get(['obj', 'hello']) === 'hello' // true
 await sandbox.get(['obj', 'world']) === 'world' // true
 ```
 
-Equivalent to
+等价于
 
 ```js
 let sandbox = new Sandbox()
@@ -230,9 +230,9 @@ await sandbox.context.obj.hello === 'hello' // true
 await sandbox.context.obj['world'] === 'world' // true
 ```
 
-#### async Sandbox#remove(path: Array<string>) : void
+#### async Sandbox#remove(path: Array<string> | string) : void
 
-Remove the value of a specific path in the sandbox context.
+移除沙箱上下文内特定路径的值.
 
 ```js
 let sandbox = new Sandbox()
@@ -245,7 +245,7 @@ await sandbox.remove('obj["world"]')
 await sandbox.context.obj // {}
 ```
 
-Equivalent to
+等价于
 
 ```js
 let sandbox = new Sandbox()
@@ -258,7 +258,7 @@ await sandbox.remove(['obj', 'world'])
 await sandbox.context.obj // {}
 ```
 
-Equivalent to
+等价于
 
 ```js
 let sandbox = new Sandbox()
@@ -271,9 +271,9 @@ delete sandbox.context.obj.world
 await sandbox.context.obj // {}
 ```
 
-#### async Sandbox#call(path: Array<string>, ...args: Array<any>) : any
+#### async Sandbox#call(path: Array<string> | string, ...args: Array<any>) : any
 
-Calling a function within a sandbox context within a specific path, the actual function runs in the sandbox.
+调用沙箱上下文内特定路径的函数, 实际的函数运行在沙箱内完成.
 
 ```js
 let sandbox = new Sandbox()
@@ -285,7 +285,7 @@ sandbox.context.functions.sayHelloWorld = function(speaker) {
 await sandbox.call('functions.sayHelloWorld', 'Sandbox') === 'Sandbox: hello world' // true
 ```
 
-Equivalent to
+等价于
 
 ```js
 let sandbox = new Sandbox()
@@ -297,7 +297,7 @@ sandbox.context.functions.sayHelloWorld = function(speaker) {
 await sandbox.call(['functions', 'sayHelloWorld'], 'Sandbox') === 'Sandbox: hello world' // true
 ```
 
-Equivalent to
+等价于
 
 ```js
 let sandbox = new Sandbox()
@@ -311,28 +311,28 @@ await sandbox.context.functions.sayHelloWorld('Sandbox') === 'Sandbox: hello wor
 
 #### Sandbox#callable : { [string]: Function }
 
-This is an asynchronous Proxy object that can be used as syntactic sugar for `Sandbox#registerCall` and `Sandbox#cancelCall`.
+这是一个异步 Proxy 对象, 可作为 `Sandbox#registerCall` 和 `Sandbox#cancelCall` 的语法糖使用.
 
 ```js
 let sandbox = new Sandbox()
   , helloWorld = 'hello world'
 
-// Register the Callable function
+// 注册 Callable 函数
 sandbox.callable.sayHelloWorld = function(speaker) {
   return `${ speaker }: ${ helloWorld }`
 }
 
-// Call the Callable function
+// 调用 Callable 函数
 await sandbox.eval('sayHelloWorld("Sandbox")') === 'Sandbox: hello world' // true
 
-// Cancel registered Callable function
+// 反注册 Callable 函数
 delete sandbox.callable.sayHelloWorld
 await sandbox.eval('sayHelloWorld') // ReferenceError!
 ```
 
-#### async Sandbox#registerCall(path: Array<string>, func: Function) : void
+#### async Sandbox#registerCall(path: string | Array<string>, func: Function) : void
 
-Register a Callable function in the sandbox, which can be called in the sandbox, but the actual function is done outside the sandbox.
+在沙箱里注册一个 Callable 函数, 该函数可在沙箱中调用, 但实际的函数运行是在沙箱外完成的.
 
 ```js
 let sandbox = new Sandbox()
@@ -343,9 +343,9 @@ await sandbox.registerCall('sayHelloWorld', function(speaker) {
 await sandbox.eval('sayHelloWorld("Sandbox")') === 'Sandbox: hello world' // true
 ```
 
-#### async Sandbox#cancelCall(path: Array<string>) : void
+#### async Sandbox#cancelCall(path: string | Array<string>) : void
 
-Cancel registered Callable function.
+反注册 Callable 函数.
 
 ```js
 let sandbox = new Sandbox()
@@ -359,7 +359,7 @@ await sandbox.eval('sayHelloWorld')  // ReferenceError!
 
 #### readonly Sandbox#available : boolean
 
-Used to confirm that the Web Worker within the sandbox is available, and when `Sandbox#destroy()` is called, its value becomes `false`.
+用于验证沙箱内的 Web Worker 是否可用, 当 `Sandbox#destroy()` 被调用后, 它的值会变成 `false`.
 
 ```js
 let sandbox = new Sandbox()
@@ -368,7 +368,7 @@ sandbox.available // true
 
 #### Sandbox#destroy() : boolean
 
-Destroy the Web Worker in the instance of the sandbox, which will call the `Worker#terminate ()` to terminate the Web Worker. If the Web Worker is terminated by this call, it will return `true`, other cases will return `false`.
+销毁沙箱实例内的 Web Worker, 它会调用 `Worker#terminate()` 来终止 Web Worker. 如果 Web Worker 被这次调用终止了, 会返回 `true`, 其他情况都会返回 `false`.
 
 ```js
 let sandbox = new Sandbox()
@@ -381,37 +381,40 @@ sandbox.available // false
 
 #### class TimeoutError
 
-Use the `new` operator to create a TimeoutError instance with the constructor parameter consistent with Error.
+使用 `new` 运算符创建一个 TimeoutError 实例, 构造函数的参数与 Error 一致.
 
 ```js
+import { TimeoutError } from 'worker-sandbox'
 let err = new TimeoutError('You overtime!')
 err instanceof TimeoutError // true
 err.message // You overtime!
 ```
 
-**TimeoutError is only used to detect the exception type using the `instanceof` operator. Do not create a TimeoutError instance manually.**
+**TimeoutError 仅用于使用 `instanceof` 运算符检测异常类型的情况, 请勿手动创建 TimeoutError 实例.**
 
-## Tips
+## 小技巧
 
-The `await` operator can be omitted when you call `Sandbox#set`, `Sandbox#assign`,` Sandox#remove`, `Sandbox#registerCall`,` Sandbox#cancelCall` in the `async` function. Because the Web Worker inside the sandbox is single-threaded, the asynchronous methods are executed in the order they are called, the `await` operator is just need added when calling a function that requires a return value.
+当你在 `async` 函数调用 `Sandbox#set`, `Sandbox#assign`, `Sandox#remove`, `Sandbox#registerCall`, `Sandbox#cancelCall` 等方法时, 可以省略 `await` 运算符. 这是因为沙箱内部的 Web Worker 是单线程运行的, 所以这些异步方法也会按照调用顺序执行, 仅需在调用需要返回值的函数时, 加上 `await` 运算符.
 
 ```js
 let sandbox = new Sandbox()
-sandbox.set('hello', 'hello')
-sandbox.assign({
-  world: 'world'
-, removable: 'removable'
-})
-sandbox.remove('removable')
+for (let i = 1000; i--;) {
+  sandbox.set('hello', 'hello')
+  sandbox.assign({
+    world: 'world'
+  , removable: 'removable'
+  })
+  sandbox.remove('removable')
+}
 await sandbox.context.removable === undefined // true
 await sandbox.context.hello === 'hello' // true
 await sandbox.context.world === 'world' // true
 ```
 
-## Projects using worker-sandbox
+## 使用 worker-sandbox 的项目
 
 [gloria-sandbox: Sandbox for Gloria based on worker-sandbox](https://github.com/BlackGlory/gloria-sandbox)
 
-## Under the hood
+## 引擎盖下
 
-The technical principle of the worker-sandbox module is complex and requires a long document to explanation. A detailed description of the technical principles is being written.
+worker-sandbox 模块的技术原理较为复杂, 需要很长的篇幅解释, 关于技术原理的详细说明, 正在编写中.

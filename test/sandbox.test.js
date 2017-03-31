@@ -96,7 +96,7 @@ describe('Sandbox', function() {
         sandbox.callable.num = 12345
         expect(false).to.be.true
       } catch(e) {
-        expect(e.message).to.equal('value must be function')
+        expect(e instanceof TypeError).to.be.true
       }
       sandbox.callable.fn = () => 12345
       expect(await sandbox.callable.fn()).to.equal(12345)
