@@ -8,7 +8,6 @@ import isFunction from 'lodash/isFunction'
 import CircularJSON from 'circular-json'
 import project from '../package'
 import hash from 'object-hash'
-import { convertPathListToString } from './proxy-helper'
 
 const SYMBOL_KEY = hash.sha1(project)
 const SYMBOL_VALUE = hash.MD5(project)
@@ -16,6 +15,10 @@ const SYMBOL_VALUE = hash.MD5(project)
 const TYPE_FUNCTION = 'type_function'
 const TYPE_ERROR = 'type_error'
 const TYPE_REGEXP = 'type_regexp'
+
+function convertPathListToString(list) {
+  return list.map(x => `["${ x.replace(/\"/g, '\\"') }"]`).join('')
+}
 
 function markSymbol(obj) {
   return Object.assign({}, obj, {
@@ -45,10 +48,10 @@ function wrapDynamicScope(code) {
       // inside function unwrap
       , data
       , fn
-      , err
       // outside function unwrap
       , SYMBOL_KEY
       , SYMBOL_VALUE
+      , convertPathListToString
       , markSymbol
       , validateSymbol
       , wrapDynamicScope

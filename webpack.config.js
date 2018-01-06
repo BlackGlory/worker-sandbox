@@ -1,5 +1,6 @@
 const path = require('path')
 const webpack = require('webpack')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
   target: 'web'
@@ -18,18 +19,14 @@ module.exports = {
     rules: [
       {
         test: /\.js$/
-      , exclude: [/node_modules/, path.resolve(__dirname, 'test')]
+      , include: [path.resolve(__dirname, 'src')]
       , use: 'babel-loader'
       }
     ]
   }
 , plugins: [
-    new webpack.optimize.UglifyJsPlugin({
+    new UglifyJsPlugin({
       include: /\.min\.js$/
-    , compress: {
-        warnings: false
-      }
-    , comments: false
     , sourceMap: true
     })
   ]

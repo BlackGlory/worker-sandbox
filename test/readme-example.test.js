@@ -7,8 +7,8 @@ import { TimeoutError } from '../src/sandbox'
 describe('Quickstart', function() {
   it('is default case', async function() {
     async function runInContext(code, context) {
+      let sandbox = new Sandbox()
       try {
-        let sandbox = new Sandbox()
         await sandbox.assign(context)
         return await sandbox.eval(code)
       } finally {
@@ -41,7 +41,7 @@ describe('API', function() {
     })
 
     it('is timeout case', async function() {
-      let sandbox = new Sandbox()  
+      let sandbox = new Sandbox()
       try {
         await sandbox.eval('while(true) {}', 1000)
         expect(false).to.be.true

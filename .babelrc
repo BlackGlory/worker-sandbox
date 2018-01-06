@@ -1,19 +1,8 @@
 {
-  "presets": [
-    ["latest", {
-      "es2015": {
-        "loose": true
-      , "modules": false
-      }
-    }]
-  ]
+  "presets": []
 , "env": {
     "test": {
       "plugins": ["istanbul"]
     }
   }
-, "plugins": [
-    "transform-runtime"
-  , ["babel-plugin-transform-builtin-extend", { "globals": ["Error"] }]
-  ]
 }

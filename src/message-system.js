@@ -3,11 +3,7 @@
 import uuidV4 from 'uuid/v4'
 import EventTarget from 'event-target-shim'
 import initJSONHelper from './json-helper'
-import {
-  getPropertyByPath
-, setPropertyByPath
-, deletePropertyByPath
-} from './proxy-helper'
+import { get, set, remove } from 'object-path-operator'
 import runInContext from './run-in-context'
 
 const RESOLVED = 'resolved'
@@ -102,7 +98,7 @@ export class MessageSystem extends EventTarget {
           if (!this._remotePermissions.includes(PERMISSIONS.SEND_ASSIGN)) {
             throw new RemotePermissionError('No remote permission SEND_ASSIGN')
           }
-          setPropertyByPath(this._context, path, this.parse(value))
+          set(this._context, path, this.parse(value))
           this.sendResolvedMessage(id)
         } catch(e) {
           this.sendRejectedMessage(id, e)
@@ -117,7 +113,7 @@ export class MessageSystem extends EventTarget {
             throw new RemotePermissionError('No remote permission SEND_REGISTER')
           }
           let fn = (...args) => this.sendCallMessage(path, ...args)
-          setPropertyByPath(this._context, path, fn)
+          set(this._context, path, fn)
           this.sendResolvedMessage(id)
         } catch(e) {
           this.sendRejectedMessage(id, e)
@@ -131,7 +127,7 @@ export class MessageSystem extends EventTarget {
           if (!this._remotePermissions.includes(PERMISSIONS.SEND_ACCESS)) {
             throw new RemotePermissionError('No remote permission SEND_ACCESS')
           }
-          this.sendResolvedMessage(id, getPropertyByPath(this._context, path))
+          this.sendResolvedMessage(id, get(this._context, path))
         } catch(e) {
           this.sendRejectedMessage(id, e)
         }
@@ -144,7 +140,7 @@ export class MessageSystem extends EventTarget {
           if (!this._remotePermissions.includes(PERMISSIONS.SEND_REMOVE)) {
             throw new RemotePermissionError('No remote permission SEND_REMOVE')
           }
-          deletePropertyByPath(this._context, path)
+          remove(this._context, path)
           this.sendResolvedMessage(id)
         } catch(e) {
           this.sendRejectedMessage(id, e)
@@ -158,7 +154,7 @@ export class MessageSystem extends EventTarget {
           if (!this._remotePermissions.includes(PERMISSIONS.SEND_CALL)) {
             throw new RemotePermissionError('No remote permission SEND_CALL')
           }
-          let fn = await getPropertyByPath(this._context, path)
+          let fn = await get(this._context, path)
           this.sendResolvedMessage(id, await fn(...this.parse(args)))
         } catch(e) {
           this.sendRejectedMessage(id, e)

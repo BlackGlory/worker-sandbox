@@ -5,11 +5,8 @@ import isFunction from 'lodash/isFunction'
 import isArray from 'lodash/isArray'
 import { MessageSystem, PERMISSIONS } from './message-system'
 import SandboxWorker from 'worker-loader?inline&name=worker.js!./worker.js'
-import {
-  createAsyncProxyHub
-, setPropertyByPath
-, deletePropertyByPath
-} from './proxy-helper'
+import createAsyncProxyHub from 'async-proxy'
+import { set, remove } from 'object-path-operator'
 
 export class TimeoutError extends Error {
   constructor(...args) {
@@ -77,12 +74,12 @@ export class Sandbox extends MessageSystem {
     if (!isFunction(func)) {
       throw new TypeError('Only function can be registered')
     }
-    setPropertyByPath(this._context, path, func)
+    set(this._context, path, func)
     return this.sendRegisterMessage(path)
   }
 
   cancelCall(path) {
-    deletePropertyByPath(this._context, path)
+    remove(this._context, path)
     return this.sendRemoveMessage(path)
   }
 
