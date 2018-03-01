@@ -1,6 +1,6 @@
 'use strict'
 
-import { MessageSystem, PERMISSIONS } from './message-system'
+import { MessageSystem, PERMISSIONS } from 'message-system'
 
 self.window = self
 

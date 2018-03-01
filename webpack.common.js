@@ -1,14 +1,11 @@
 const path = require('path')
-const webpack = require('webpack')
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 module.exports = {
   target: 'web'
 , entry: {
     'sandbox': './src/sandbox.js'
-  , 'sandbox.min': './src/sandbox.js'
   }
-, devtool: process.env.NODE_ENV === 'production' ? false : 'inline-source-map'
 , output: {
     path: path.resolve(__dirname, 'lib')
   , filename: '[name].js'
@@ -25,9 +22,6 @@ module.exports = {
     ]
   }
 , plugins: [
-    new UglifyJsPlugin({
-      include: /\.min\.js$/
-    , sourceMap: true
-    })
+    new CleanWebpackPlugin(['lib'])
   ]
 }

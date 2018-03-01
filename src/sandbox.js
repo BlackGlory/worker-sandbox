@@ -1,9 +1,8 @@
 'use strict'
 
-import uuidV4 from 'uuid/v4'
 import isFunction from 'lodash/isFunction'
 import isArray from 'lodash/isArray'
-import { MessageSystem, PERMISSIONS } from './message-system'
+import { MessageSystem, PERMISSIONS } from 'message-system'
 import SandboxWorker from 'worker-loader?inline&name=worker.js!./worker.js'
 import createAsyncProxyHub from 'async-proxy'
 import { set, remove } from 'object-path-operator'

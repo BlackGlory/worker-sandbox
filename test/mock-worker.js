@@ -3,7 +3,7 @@
 import {
   MessageSystem
 , PERMISSIONS
-} from '../src/message-system'
+} from 'message-system'
 import { expect } from 'chai'
 
 self.window = self

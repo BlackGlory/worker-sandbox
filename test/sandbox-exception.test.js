@@ -2,9 +2,6 @@
 
 import { expect } from 'chai'
 import { Sandbox, TimeoutError } from '../src/sandbox'
-import initJSONHelper from '../src/json-helper'
-
-const { stringify } = initJSONHelper({})
 
 describe('Sandbox Execption', function() {
   it('should throw a TimeoutError and worker destroyed', async function() {
