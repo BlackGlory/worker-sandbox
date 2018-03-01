@@ -10,7 +10,7 @@ module.exports = {
   }
 , devtool: process.env.NODE_ENV === 'production' ? false : 'inline-source-map'
 , output: {
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'lib')
   , filename: '[name].js'
   , library: 'Sandbox'
   , libraryTarget: 'umd'
