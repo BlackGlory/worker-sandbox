@@ -55,7 +55,7 @@ sandbox instanceof Sandbox // true
 
 You can also use your own Worker instance, see below.
 
-#### Sandbox#eval(code: string): Promise<any>
+#### Sandbox#eval(code: string): Promise\<any>
 
 Eval code in the sandbox.
 
@@ -65,7 +65,7 @@ const result = await sandbox.eval('"hello world"')
 result === 'hello world' // true
 ```
 
-#### Sandbox#execute(code: string): Promise<void>
+#### Sandbox#execute(code: string): Promise\<void>
 
 No return value version of `Sandbox#eval`.
 
@@ -105,7 +105,7 @@ await sandbox.context.helloWorld === undefined // true
 await sandbox.context.sayHelloWorld === undefined // true
 ```
 
-#### Sandbox#set(path: string | string[], value: any): Promise<void>
+#### Sandbox#set(path: string | string[], value: any): Promise\<void>
 
 Set the value of a specific path in the sandbox context.
 
@@ -143,7 +143,7 @@ sandbox.context['arr[2]'] = 'arr[2]'
 await sandbox.context['arr[2]'] === 'arr[2]' // true
 ```
 
-#### Sandbox#assign(obj: any) : Promise<void>
+#### Sandbox#assign(obj: any) : Promise\<void>
 
 It is the `Object.assign()` for `Sandbox#context`.
 
@@ -181,7 +181,7 @@ await sandbox.context.sayHelloWorld() === 'hello world' // true
 await sandbox.context['functions.sayHelloWorld']() === 'hello world' // true
 ```
 
-#### Sandbox#get(path: string | string[]): Promsie<any>
+#### Sandbox#get(path: string | string[]): Promsie\<any>
 
 Get the value of a specific path in the sandbox context.
 
@@ -219,7 +219,7 @@ await sandbox.context.obj.hello === 'hello' // true
 await sandbox.context.obj['world'] === 'world' // true
 ```
 
-#### Sandbox#remove(path: string | string[]): Promise<void>
+#### Sandbox#remove(path: string | string[]): Promise\<void>
 
 Remove the value of a specific path in the sandbox context.
 
@@ -260,7 +260,7 @@ delete sandbox.context.obj.world
 await sandbox.context.obj // {}
 ```
 
-#### Sandbox#call(path: string | string[], ...args: any[]): Promise<any>
+#### Sandbox#call(path: string | string[], ...args: any[]): Promise\<any>
 
 Calling a function within a sandbox context within a specific path, the actual function runs in the sandbox.
 
@@ -316,7 +316,7 @@ delete sandbox.callable.sayHelloWorld
 await sandbox.eval('sayHelloWorld') // ReferenceError!
 ```
 
-#### Sandbox#registerCall(path: string | string[], func: Function): Promise<void>
+#### Sandbox#registerCall(path: string | string[], func: Function): Promise\<void>
 
 Register a Callable function in the sandbox, which can be called in the sandbox, but the actual function is done outside the sandbox.
 
@@ -329,7 +329,7 @@ await sandbox.registerCall('sayHelloWorld', speaker =>
 await sandbox.eval('sayHelloWorld("Sandbox")') === 'Sandbox: hello world' // true
 ```
 
-#### Sandbox#cancelCall(path: string | string[]): Promise<void>
+#### Sandbox#cancelCall(path: string | string[]): Promise\<void>
 
 Cancel registered Callable function.
 
@@ -352,7 +352,7 @@ const sandbox = new Sandbox()
 sandbox.destroy()
 ```
 
-## Advance
+## Advanced
 
 ### Custom worker
 
