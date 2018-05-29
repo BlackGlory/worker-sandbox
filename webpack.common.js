@@ -3,8 +3,9 @@ const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 module.exports = {
   target: 'web'
+, context: path.resolve(__dirname, './src')
 , entry: {
-    'sandbox': './src/sandbox.js'
+    'sandbox': './sandbox.ts'
   }
 , output: {
     path: path.resolve(__dirname, 'lib')
@@ -12,11 +13,19 @@ module.exports = {
   , library: 'Sandbox'
   , libraryTarget: 'umd'
   }
+, resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.json']
+  }
 , module: {
     rules: [
       {
-        test: /\.js$/
-      , include: [path.resolve(__dirname, 'src')]
+        test: /\.tsx?$/
+      , exclude: /node_modules/
+      , use: 'ts-loader'
+      }
+    , {
+        test: /\.jsx?$/
+      , exclude: /node_modules/
       , use: 'babel-loader'
       }
     ]

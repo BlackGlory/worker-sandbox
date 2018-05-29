@@ -1,17 +1,14 @@
 module.exports = function(config) {
   config.set({
-    basePath: ''
-  , frameworks: ['mocha']
+    frameworks: ['mocha']
   , files: [
       'test/**/*.test.js'
     ]
-  , exclude: []
   , preprocessors: {
       'test/**/*.test.js': ['webpack', 'sourcemap']
     }
   , webpack: require('./webpack.dev')
-  , reporters: ['mocha', 'coverage']
-  , port: 9876
+  , reporters: ['mocha']
   , colors: true
   , logLevel: config.LOG_INFO
   , autoWatch: true

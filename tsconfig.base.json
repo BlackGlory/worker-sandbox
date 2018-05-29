@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS"
+  , "target": "ESNext"
+  , "lib": [
+      "esnext"
+    , "webworker"  
+    ]
+  , "strict": true
+  , "removeComments": true
+  , "sourceMap": true
+  , "declaration": true
+  , "alwaysStrict": false
+  }
+}
