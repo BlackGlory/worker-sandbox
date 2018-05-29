@@ -1,7 +1,7 @@
 {
   "name": "worker-sandbox",
-  "version": "1.0.0",
-  "description": "Javascript Web Workers Sandbox",
+  "version": "1.0.1",
+  "description": "The Javascript sandbox based on Web Workers.",
   "repository": "git@github.com:BlackGlory/worker-sandbox.git",
   "author": "BlackGlory <woshenmedoubuzhidao@blackglory.me>",
   "license": "MIT",
@@ -9,6 +9,7 @@
   "typings": "lib/sandbox.d.ts",
   "scripts": {
     "precommit": "yarn lint && yarn test",
+    "prepublish": "yarn build",
     "build": "webpack --config webpack.prod.js",
     "dev-build": "webpack --config webpack.dev.js -w",
     "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
@@ -19,7 +20,6 @@
     "@babel/core": "^7.0.0-beta.49",
     "@babel/preset-env": "^7.0.0-beta.49",
     "babel-loader": "^8.0.0-beta.3",
-    "babel-plugin-transform-remove-strict-mode": "^0.0.2",
     "clean-webpack-plugin": "^0.1.19",
     "coveralls": "^3.0.1",
     "cross-env": "^5.1.6",
