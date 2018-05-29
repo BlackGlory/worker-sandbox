@@ -9,7 +9,7 @@
   "typings": "lib/sandbox.d.ts",
   "scripts": {
     "precommit": "yarn lint && yarn test",
-    "prepublish": "yarn build",
+    "prepublishOnly": "yarn build",
     "build": "webpack --config webpack.prod.js",
     "dev-build": "webpack --config webpack.dev.js -w",
     "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
